@@ -51,6 +51,11 @@
 <body>
 <div class="container" id="app">
     <h1>🎉 Mi Inventario</h1>
+   
+    <div style="display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <button class="btn btn-outline" style="flex:1;" onclick="mostrarSeccion('inventario')">📦 Inventario</button>
+    <button class="btn btn-outline" style="flex:1;" onclick="mostrarSeccion('historial')">📋 Historial</button>
+    </div>
     
     <!-- RESUMEN -->
     <div class="card">
@@ -77,6 +82,19 @@
                     <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">No hay productos. Agrega uno.</td></tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+    <!-- SECCIÓN HISTORIAL (oculta por defecto) -->
+<div id="seccionHistorial" style="display:none;">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>📋 Registro de Ventas</h3>
+            <button class="btn btn-danger" style="width:auto; padding:6px 12px;" onclick="borrarHistorial()">🗑️ Limpiar</button>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;" id="listaHistorial">
+            <p style="color:#999; text-align:center;">Sin ventas registradas</p>
         </div>
     </div>
 </div>
