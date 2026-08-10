@@ -9,9 +9,12 @@
         body { background: #f4f6f9; margin: 0; padding: 16px; }
         .container { max-width: 600px; margin: 0 auto; }
         
-        h1 { font-size: 1.6rem; text-align: center; color: #1a2b4c; margin-bottom: 16px; }
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        h1 { font-size: 1.6rem; text-align: center; color: #1a2b4c; margin: 0 0 12px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 12px; font-weight: bold; background: #e9ecf2; color: #333; cursor: pointer; }
+        .tab-btn.active { background: #1a4c8a; color: white; }
         
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
         .resumen-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .resumen-item { background: #eef2f7; border-radius: 12px; padding: 10px; text-align: center; }
         .resumen-item small { display: block; font-size: 0.7rem; color: #555; }
@@ -24,6 +27,7 @@
         .btn-warning { background: #f5a623; color: white; }
         .btn-danger { background: #c62828; color: white; }
         .btn-outline { background: transparent; border: 1px solid #ccc; color: #333; }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; width: auto; }
         
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; color: #333; }
@@ -44,62 +48,75 @@
         .modal-header h3 { margin: 0; }
         .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; }
         
-        .hidden { display: none; }
+        .seccion { display: none; }
+        .seccion.active { display: block; }
+        
         .mensaje-flotante { background: #323232; color: white; padding: 12px 20px; border-radius: 30px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .historial-item { background: #f8f9fa; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #2e7d32; }
+        .historial-item .row { display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .historial-item .detalles { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 4px; color: #555; }
+        .vendedor-tag { background: #e0e7ff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #1a4c8a; }
+        .text-center { text-align: center; }
+        .mt-8 { margin-top: 8px; }
+        .gap-8 { gap: 8px; }
     </style>
 </head>
 <body>
 <div class="container" id="app">
     <h1>🎉 Mi Inventario</h1>
-   
-    <div style="display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <button class="btn btn-outline" style="flex:1;" onclick="mostrarSeccion('inventario')">📦 Inventario</button>
-    <button class="btn btn-outline" style="flex:1;" onclick="mostrarSeccion('historial')">📋 Historial</button>
+
+    <!-- Pestañas -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="cambiarPestana('inventario')">📦 Inventario</button>
+        <button class="tab-btn" onclick="cambiarPestana('historial')">📋 Historial</button>
     </div>
-    
-    <!-- RESUMEN -->
-    <div class="card">
-        <div class="resumen-grid">
-            <div class="resumen-item"><small>💸 Costo Total</small><strong id="totalCosto">$0.00</strong></div>
-            <div class="resumen-item"><small>💰 Valor Venta</small><strong id="totalVenta">$0.00</strong></div>
-            <div class="resumen-item"><small>📈 Ganancia</small><strong id="gananciaPotencial" class="ganancia">$0.00</strong></div>
+
+    <!-- SECCIÓN INVENTARIO -->
+    <div id="seccionInventario" class="seccion active">
+        <!-- Resumen -->
+        <div class="card">
+            <div class="resumen-grid">
+                <div class="resumen-item"><small>💸 Costo Total</small><strong id="totalCosto">$0.00</strong></div>
+                <div class="resumen-item"><small>💰 Valor Venta</small><strong id="totalVenta">$0.00</strong></div>
+                <div class="resumen-item"><small>📈 Ganancia</small><strong id="gananciaPotencial" class="ganancia">$0.00</strong></div>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <button class="btn btn-success" onclick="abrirModal('agregar')">➕ Nuevo Producto</button>
+            <button class="btn btn-outline" onclick="exportarDatos()">📤 Respaldar</button>
+            <button class="btn btn-outline" onclick="importarDatos()">📥 Restaurar</button>
+        </div>
+
+        <!-- Tabla de productos -->
+        <div class="card">
+            <div style="overflow-x: auto;">
+                <table class="tabla-productos" id="tablaProductos">
+                    <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
+                    <tbody id="cuerpoTabla">
+                        <tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">No hay productos. Agrega uno.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- BOTONES ACCIÓN -->
-    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-        <button class="btn btn-success" onclick="abrirModal('agregar')">➕ Nuevo Producto</button>
-        <button class="btn btn-outline" onclick="exportarDatos()">📤 Respaldar</button>
-        <button class="btn btn-outline" onclick="importarDatos()">📥 Restaurar</button>
-    </div>
-
-    <!-- TABLA DE PRODUCTOS -->
-    <div class="card">
-        <div style="overflow-x: auto;">
-            <table class="tabla-productos" id="tablaProductos">
-                <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
-                <tbody id="cuerpoTabla">
-                    <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">No hay productos. Agrega uno.</td></tr>
-                </tbody>
-            </table>
+    <!-- SECCIÓN HISTORIAL -->
+    <div id="seccionHistorial" class="seccion">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📋 Registro de Ventas</h3>
+                <button class="btn btn-danger btn-sm" onclick="borrarHistorial()">🗑️ Limpiar</button>
+            </div>
+            <div id="listaHistorial" style="max-height: 500px; overflow-y: auto; margin-top: 12px;">
+                <p class="text-center" style="color:#999;">Sin ventas registradas</p>
+            </div>
         </div>
     </div>
 </div>
 
-    <!-- SECCIÓN HISTORIAL (oculta por defecto) -->
-<div id="seccionHistorial" style="display:none;">
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>📋 Registro de Ventas</h3>
-            <button class="btn btn-danger" style="width:auto; padding:6px 12px;" onclick="borrarHistorial()">🗑️ Limpiar</button>
-        </div>
-        <div style="max-height: 400px; overflow-y: auto;" id="listaHistorial">
-            <p style="color:#999; text-align:center;">Sin ventas registradas</p>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL PARA AGREGAR / MOVER -->
+<!-- MODAL PRINCIPAL (Agregar / Movimiento) -->
 <div class="modal" id="modalPrincipal">
     <div class="modal-content">
         <div class="modal-header">
@@ -107,12 +124,12 @@
             <button class="close-btn" onclick="cerrarModal()">&times;</button>
         </div>
         <div id="modalBody">
-            <!-- Se llena con JS según la acción -->
+            <!-- Se llena con JS -->
         </div>
     </div>
 </div>
 
-<!-- MODAL PARA CONFIRMAR ELIMINAR -->
+<!-- MODAL ELIMINAR -->
 <div class="modal" id="modalEliminar">
     <div class="modal-content">
         <div class="modal-header"><h3>¿Eliminar?</h3><button class="close-btn" onclick="cerrarModalEliminar()">&times;</button></div>
@@ -123,26 +140,28 @@
 </div>
 
 <script>
-    // ---------- BASE DE DATOS LOCAL ----------
+    // ---------- PRODUCTOS ----------
     function getProductos() {
-        try {
-            return JSON.parse(localStorage.getItem('inventario_productos')) || [];
-        } catch { return []; }
+        try { return JSON.parse(localStorage.getItem('inventario_productos')) || []; } catch { return []; }
     }
-
     function guardarProductos(productos) {
         localStorage.setItem('inventario_productos', JSON.stringify(productos));
     }
 
-    let productoAEliminar = null;
+    // ---------- HISTORIAL ----------
+    function getHistorial() {
+        try { return JSON.parse(localStorage.getItem('historial_ventas')) || []; } catch { return []; }
+    }
+    function guardarHistorial(historial) {
+        localStorage.setItem('historial_ventas', JSON.stringify(historial));
+    }
 
-    // ---------- RENDERIZAR ----------
+    // ---------- RENDERIZAR INVENTARIO ----------
     function renderizar() {
         const productos = getProductos();
         const tbody = document.getElementById('cuerpoTabla');
-        
         if (productos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Sin productos</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">Sin productos</td></tr>`;
         } else {
             tbody.innerHTML = productos.map((p, index) => `
                 <tr>
@@ -152,8 +171,8 @@
                     <td><span class="badge-stock ${p.stock <= 3 ? 'badge-bajo' : ''}">${p.stock}</span></td>
                     <td>
                         <div class="acciones-botones">
-                            <button class="btn btn-warning" onclick="abrirMovimiento(${index})">📦</button>
-                            <button class="btn btn-danger" onclick="confirmarEliminar(${index})">🗑️</button>
+                            <button class="btn btn-warning btn-sm" onclick="abrirMovimiento(${index})">📦</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmarEliminar(${index})">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -207,7 +226,7 @@
         mostrarMensaje('✅ Producto agregado correctamente');
     }
 
-    // ---------- MODAL MOVIMIENTO (Entrada/Salida) ----------
+    // ---------- MODAL MOVIMIENTO (con vendedor) ----------
     let indiceMovimiento = null;
 
     function abrirMovimiento(index) {
@@ -218,6 +237,7 @@
         document.getElementById('modalBody').innerHTML = `
             <p><strong>Stock actual:</strong> ${p.stock} unidades</p>
             <div class="input-group"><label>Cantidad a mover</label><input id="f_cantidad_mov" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>👤 Vendedor (escribe tu nombre)</label><input id="f_vendedor" type="text" placeholder="Ej: Ana, Carlos, María"></div>
             <button class="btn btn-success" onclick="hacerMovimiento('entrada')">📥 Dar Entrada (Comprar)</button>
             <button class="btn btn-danger" onclick="hacerMovimiento('salida')" style="margin-top:8px;">📤 Dar Salida (Vender)</button>
             <button class="btn btn-outline" onclick="cerrarModal()" style="margin-top:8px;">Cancelar</button>
@@ -227,19 +247,22 @@
 
     function hacerMovimiento(tipo) {
         const cantidad = parseInt(document.getElementById('f_cantidad_mov').value);
+        const vendedor = document.getElementById('f_vendedor').value.trim() || 'Anónimo';
+
         if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa una cantidad válida');
 
         const productos = getProductos();
         const p = productos[indiceMovimiento];
 
-        if (tipo === 'salida' && p.stock < cantidad) {
-            return mostrarMensaje('❌ Stock insuficiente. Solo hay ' + p.stock + ' unidades.');
-        }
-
-        if (tipo === 'entrada') {
-            p.stock += cantidad;
-        } else {
+        if (tipo === 'salida') {
+            if (p.stock < cantidad) {
+                return mostrarMensaje('❌ Stock insuficiente. Solo hay ' + p.stock + ' unidades.');
+            }
             p.stock -= cantidad;
+            // Registrar en el historial con vendedor
+            registrarVenta(p, cantidad, vendedor);
+        } else {
+            p.stock += cantidad;
         }
 
         guardarProductos(productos);
@@ -248,14 +271,67 @@
         mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Nuevo stock: ${p.stock}`);
     }
 
-    // ---------- ELIMINAR ----------
+    // ---------- REGISTRAR VENTA CON VENDEDOR ----------
+    function registrarVenta(producto, cantidad, vendedor) {
+        const historial = getHistorial();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+
+        historial.push({
+            producto: producto.nombre,
+            categoria: producto.categoria || 'General',
+            cantidad: cantidad,
+            precioVenta: producto.precioVenta,
+            precioCompra: producto.precioCompra,
+            gananciaUnidad: producto.precioVenta - producto.precioCompra,
+            gananciaTotal: (producto.precioVenta - producto.precioCompra) * cantidad,
+            vendedor: vendedor,
+            fecha: fecha,
+            hora: hora,
+            timestamp: ahora.getTime()
+        });
+        guardarHistorial(historial);
+        // Si estamos viendo el historial, actualizarlo
+        if (document.getElementById('seccionHistorial').classList.contains('active')) {
+            mostrarHistorial();
+        }
+    }
+
+    // ---------- MOSTRAR HISTORIAL ----------
+    function mostrarHistorial() {
+        const historial = getHistorial();
+        const contenedor = document.getElementById('listaHistorial');
+        if (historial.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin ventas registradas</p>';
+            return;
+        }
+        // Ordenar de más reciente a más antigua
+        const html = historial.slice().reverse().map(v => `
+            <div class="historial-item">
+                <div class="row">
+                    <strong>${v.producto}</strong>
+                    <span style="color:#666;">${v.fecha} ${v.hora}</span>
+                </div>
+                <div class="detalles">
+                    <span>Cant: ${v.cantidad}</span>
+                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                    <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
+                    <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
+                </div>
+            </div>
+        `).join('');
+        contenedor.innerHTML = html;
+    }
+
+    // ---------- ELIMINAR PRODUCTO ----------
+    let productoAEliminar = null;
     function confirmarEliminar(index) {
         productoAEliminar = index;
         const productos = getProductos();
         document.getElementById('textoEliminar').textContent = `¿Eliminar "${productos[index].nombre}" definitivamente?`;
         document.getElementById('modalEliminar').classList.add('active');
     }
-
     document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
         if (productoAEliminar !== null) {
             let productos = getProductos();
@@ -267,6 +343,29 @@
             mostrarMensaje('🗑️ Producto eliminado');
         }
     });
+
+    // ---------- HISTORIAL: BORRAR ----------
+    function borrarHistorial() {
+        if (confirm('¿Eliminar todo el historial de ventas?')) {
+            guardarHistorial([]);
+            mostrarHistorial();
+            mostrarMensaje('🗑️ Historial limpiado');
+        }
+    }
+
+    // ---------- PESTAÑAS ----------
+    function cambiarPestana(seccion) {
+        document.querySelectorAll('.seccion').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        if (seccion === 'inventario') {
+            document.getElementById('seccionInventario').classList.add('active');
+            document.querySelector('.tab-btn:first-child').classList.add('active');
+        } else {
+            document.getElementById('seccionHistorial').classList.add('active');
+            document.querySelector('.tab-btn:last-child').classList.add('active');
+            mostrarHistorial(); // actualizar al cambiar
+        }
+    }
 
     // ---------- UTILIDADES MODALES ----------
     function cerrarModal() {
@@ -284,17 +383,20 @@
         if (e.target === this) cerrarModalEliminar();
     });
 
-    // ---------- RESPALDAR / RESTAURAR ----------
+    // ---------- RESPALDAR Y RESTAURAR ----------
     function exportarDatos() {
-        const data = JSON.stringify(getProductos());
+        const data = JSON.stringify({
+            productos: getProductos(),
+            historial: getHistorial()
+        });
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'respaldo_inventario.json';
+        a.download = 'respaldo_completo.json';
         a.click();
         URL.revokeObjectURL(url);
-        mostrarMensaje('📤 Respaldo descargado');
+        mostrarMensaje('📤 Respaldo completo descargado');
     }
 
     function importarDatos() {
@@ -308,8 +410,11 @@
             reader.onload = function(ev) {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (Array.isArray(data)) {
-                        guardarProductos(data);
+                    if (data.productos && Array.isArray(data.productos)) {
+                        guardarProductos(data.productos);
+                        if (data.historial && Array.isArray(data.historial)) {
+                            guardarHistorial(data.historial);
+                        }
                         renderizar();
                         mostrarMensaje('📥 Datos restaurados correctamente');
                     } else {
@@ -335,6 +440,8 @@
 
     // ---------- INICIALIZAR ----------
     renderizar();
+    // Por defecto mostrar inventario
+    cambiarPestana('inventario');
 </script>
 </body>
-                             </html>
+</html>
