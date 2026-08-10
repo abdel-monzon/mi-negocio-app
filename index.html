@@ -59,6 +59,8 @@
         .whatsapp-btn { background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
         .flex { display: flex; gap: 8px; flex-wrap: wrap; }
         .flex .btn { flex: 1; }
+        .search-box { width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 30px; font-size: 0.95rem; outline: none; margin-bottom: 12px; }
+        .search-box:focus { border-color: #1a4c8a; box-shadow: 0 0 0 3px rgba(26,76,138,0.2); }
     </style>
 </head>
 <body>
@@ -119,6 +121,7 @@
                 <button class="btn btn-warning" onclick="enviarReporteWhatsApp()">📲 Reporte WhatsApp</button>
             </div>
             <div class="card">
+                <input type="text" id="buscarAdmin" class="search-box" placeholder="🔍 Buscar por nombre o categoría..." oninput="renderizarAdmin()">
                 <div style="overflow-x:auto;">
                     <table class="tabla-productos" id="tablaAdmin">
                         <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
@@ -155,6 +158,7 @@
         <div id="vendedorVender" class="seccion active">
             <div class="card">
                 <h3>🛒 Productos disponibles</h3>
+                <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar por nombre o categoría..." oninput="renderizarVendedor()">
                 <div id="listaProductosVenta"></div>
             </div>
         </div>
@@ -262,36 +266,47 @@
         }
     }
 
-    // ---------- ADMIN ----------
+    // ---------- ADMIN: RENDERIZAR CON BÚSQUEDA ----------
     function renderizarAdmin() {
         const productos = getProductos();
+        const busqueda = document.getElementById('buscarAdmin').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda))
+        );
+
         const tbody = document.getElementById('cuerpoAdmin');
-        if (productos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">Sin productos</td></tr>`;
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
         } else {
-            tbody.innerHTML = productos.map((p, index) => `
-                <tr>
-                    <td><strong>${p.nombre}</strong><br><small style="color:#666;">${p.categoria || 'General'}</small></td>
-                    <td>$${p.precioCompra.toFixed(2)}</td>
-                    <td>$${p.precioVenta.toFixed(2)}</td>
-                    <td><span class="badge-stock ${p.stock <= 3 ? 'badge-bajo' : ''}">${p.stock}</span></td>
-                    <td>
-                        <div class="acciones-botones">
-                            <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${index})">📦</button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${index})">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = filtrados.map((p, index) => {
+                const realIndex = productos.indexOf(p);
+                return `
+                    <tr>
+                        <td><strong>${p.nombre}</strong><br><small style="color:#666;">${p.categoria || 'General'}</small></td>
+                        <td>$${p.precioCompra.toFixed(2)}</td>
+                        <td>$${p.precioVenta.toFixed(2)}</td>
+                        <td><span class="badge-stock ${p.stock <= 3 ? 'badge-bajo' : ''}">${p.stock}</span></td>
+                        <td>
+                            <div class="acciones-botones">
+                                <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${realIndex})">📦</button>
+                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${realIndex})">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
+
+        // Resumen (siempre basado en todos los productos)
         let costoTotal = 0, ventaTotal = 0;
         productos.forEach(p => { costoTotal += p.precioCompra * p.stock; ventaTotal += p.precioVenta * p.stock; });
         document.getElementById('totalCosto').textContent = '$' + costoTotal.toFixed(2);
         document.getElementById('totalVenta').textContent = '$' + ventaTotal.toFixed(2);
         document.getElementById('gananciaPotencial').textContent = '$' + (ventaTotal - costoTotal).toFixed(2);
-        mostrarHistorialAdmin();
     }
 
+    // ---------- ADMIN: AGREGAR ----------
     function abrirModalAgregar() {
         document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
         document.getElementById('modalAdminBody').innerHTML = `
@@ -321,6 +336,7 @@
         mostrarMensaje('✅ Producto agregado');
     }
 
+    // ---------- ADMIN: MOVIMIENTO ----------
     let indiceAdmin = null;
     function abrirModalMovimientoAdmin(index) {
         indiceAdmin = index;
@@ -373,7 +389,7 @@
         mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Stock: ${p.stock}`);
     }
 
-    let eliminarAdminIndex = null;
+    // ---------- ADMIN: ELIMINAR ----------
     function confirmarEliminarAdmin(index) {
         if (confirm(`¿Eliminar "${getProductos()[index].nombre}" definitivamente?`)) {
             let productos = getProductos();
@@ -384,6 +400,7 @@
         }
     }
 
+    // ---------- ADMIN: HISTORIAL ----------
     function mostrarHistorialAdmin() {
         const historial = getHistorial();
         const contenedor = document.getElementById('listaHistorialAdmin');
@@ -418,27 +435,37 @@
         }
     }
 
-    // ---------- VENDEDOR ----------
+    // ---------- VENDEDOR: RENDERIZAR CON BÚSQUEDA ----------
     function renderizarVendedor() {
         const productos = getProductos();
+        const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda))
+        );
+
         const contenedor = document.getElementById('listaProductosVenta');
-        if (productos.length === 0) {
-            contenedor.innerHTML = '<p class="text-center" style="color:#999;">No hay productos disponibles</p>';
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<p class="text-center" style="color:#999;">${productos.length === 0 ? 'No hay productos disponibles' : 'No hay coincidencias'}</p>`;
             return;
         }
-        contenedor.innerHTML = productos.map((p, index) => `
-            <div class="producto-venta">
-                <div>
-                    <span class="nombre">${p.nombre}</span>
-                    <span class="stock">Stock: ${p.stock}</span>
-                    <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+        contenedor.innerHTML = filtrados.map((p, index) => {
+            const realIndex = productos.indexOf(p);
+            return `
+                <div class="producto-venta">
+                    <div>
+                        <span class="nombre">${p.nombre}</span>
+                        <span class="stock">Stock: ${p.stock}</span>
+                        <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+                    </div>
+                    <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
                 </div>
-                <button class="btn-venta" onclick="abrirModalVenta(${index})">Vender</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         mostrarMisVentas();
     }
 
+    // ---------- VENDEDOR: VENTA ----------
     let indiceVenta = null;
     function abrirModalVenta(index) {
         indiceVenta = index;
@@ -486,7 +513,6 @@
         renderizarVendedor();
         mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre} registrada`);
 
-        // Preguntar si enviar por WhatsApp
         if (confirm('📲 ¿Enviar comprobante por WhatsApp?')) {
             enviarVentaWhatsApp(venta);
         }
@@ -623,3 +649,6 @@
 </script>
 </body>
 </html>
+```
+
+---                       
