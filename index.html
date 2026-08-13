@@ -1344,23 +1344,46 @@
         `).join('');
     }
 
+    // ----- CAMBIAR PESTAÑAS VENDEDOR (CORREGIDO) -----
     function cambiarPestanaVendedor(seccion) {
-        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
-        if (seccion === 'vender') {
-            document.getElementById('vendedorVender').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
-        } else {
-            document.getElementById('vendedorMisVentas').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
-            mostrarMisVentas();
+        // 1. Ocultar todas las secciones de vendedor
+        document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+
+        // 2. Mostrar la sección seleccionada
+        const map = {
+            'vender': 'vendedorVender',
+            'misventas': 'vendedorMisVentas'
+        };
+        const seccionMostrar = document.getElementById(map[seccion]);
+        if (seccionMostrar) {
+            seccionMostrar.classList.add('active');
+            seccionMostrar.style.display = 'block';
         }
+
+       // 3. Actualizar clases de los botones (pestañas)
+       document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => {
+           el.classList.remove('active');
+       });
+       const btns = document.querySelectorAll('#vendedorSection .tab-btn');
+       const idx = ['vender', 'misventas'].indexOf(seccion);
+       if (idx !== -1) btns[idx].classList.add('active');
+
+       // 4. Cargar datos según la sección (opcional)
+       if (seccion === 'misventas') mostrarMisVentas();
     }
 
-    // ----- CAMBIAR PESTAÑAS ADMIN -----
+    // ----- CAMBIAR PESTAÑAS ADMIN (CORREGIDO) -----
     function cambiarPestanaAdmin(seccion) {
-        document.querySelectorAll('#adminSection .seccion').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
+        // 1. Ocultar todas las secciones
+        document.querySelectorAll('#adminSection .seccion').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none'; // Forzar ocultamiento
+        });
+
+        // 2. Mostrar la sección seleccionada
         const map = {
             'inventario': 'adminInventario',
             'clientes': 'adminClientes',
@@ -1372,11 +1395,21 @@
             'reportes': 'adminReportes',
             'config': 'adminConfig'
         };
-        document.getElementById(map[seccion]).classList.add('active');
+        const seccionMostrar = document.getElementById(map[seccion]);
+        if (seccionMostrar) {
+            seccionMostrar.classList.add('active');
+            seccionMostrar.style.display = 'block'; // Forzar visualización
+        }
+
+        // 3. Actualizar clases de los botones (pestañas)
+        document.querySelectorAll('#adminSection .tab-btn').forEach(el => {
+            el.classList.remove('active');
+        });
         const btns = document.querySelectorAll('#adminSection .tab-btn');
         const idx = ['inventario','clientes','proveedores','categorias','gastos','mermas','historial','reportes','config'].indexOf(seccion);
         if (idx !== -1) btns[idx].classList.add('active');
 
+        // 4. Cargar datos según la sección (opcional)
         if (seccion === 'clientes') renderizarClientes();
         if (seccion === 'proveedores') renderizarProveedores();
         if (seccion === 'categorias') renderizarCategorias();
@@ -1385,7 +1418,6 @@
         if (seccion === 'historial') mostrarHistorialAdmin();
         if (seccion === 'reportes') cargarReporte('dia');
     }
-
     // ----- RESPALDOS -----
     function exportarDatos() {
         const data = JSON.stringify({
