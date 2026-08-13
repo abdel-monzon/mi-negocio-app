@@ -307,7 +307,7 @@
 
     <script>
     // ============================================================
-    // PARTE 2: DATOS, LOGIN, DASHBOARD, CLIENTES, TICKET
+    // SCRIPT COMPLETO CORREGIDO (DATOS, LOGIN, INVENTARIO, CLIENTES, TICKET, PROVEEDORES, CATEGORÍAS, GASTOS, MERMAS, HISTORIAL, REPORTES, CONFIG, RESPALDOS)
     // ============================================================
 
     console.log('✅ App iniciada correctamente');
@@ -315,6 +315,9 @@
     let PIN_ADMIN = '1234';
     let UMBRAL_STOCK = 5;
     let vendedorNombre = '';
+    let indiceEditar = null;
+    let indiceAdmin = null;
+    let indiceVenta = null;
 
     // ----- DATOS -----
     function getProductos() {
@@ -418,6 +421,270 @@
             document.getElementById('vendedorNombre').value = '';
             mostrarMensaje('🔒 Sesión cerrada');
         }
+    }
+
+    // ----- ADMIN: RENDERIZAR INVENTARIO -----
+    function renderizarAdmin() {
+        const productos = getProductos();
+        const busqueda = document.getElementById('buscarAdmin').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
+            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
+        );
+        const tbody = document.getElementById('cuerpoAdmin');
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
+        } else {
+            tbody.innerHTML = filtrados.map((p, index) => {
+                const realIndex = productos.indexOf(p);
+                const bajoStock = p.stock <= UMBRAL_STOCK;
+                return `
+                    <tr>
+                        <td><strong>${p.nombre}</strong><br><small style="color:rgba(255,255,255,0.4);">${p.categoria || 'General'}${p.subcategoria ? ' → ' + p.subcategoria : ''}</small></td>
+                        <td>$${p.precioCompra.toFixed(2)}</td>
+                        <td>$${p.precioVenta.toFixed(2)}</td>
+                        <td><span class="badge-stock ${bajoStock ? 'badge-bajo' : ''}">${p.stock} ${bajoStock ? '⚠️' : ''}</span></td>
+                        <td>
+                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                <button class="btn btn-primary btn-sm" onclick="abrirModalEditarProducto(${realIndex})">✏️</button>
+                                <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${realIndex})">📦</button>
+                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${realIndex})">🗑️</button>
+                                <button class="btn btn-danger btn-sm" onclick="abrirModalMermaRapida(${realIndex})" style="background:#c62828;">📉</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        let costoTotal = 0, ventaTotal = 0;
+        productos.forEach(p => { costoTotal += p.precioCompra * p.stock; ventaTotal += p.precioVenta * p.stock; });
+        document.getElementById('totalCosto').textContent = '$' + costoTotal.toFixed(2);
+        document.getElementById('totalVenta').textContent = '$' + ventaTotal.toFixed(2);
+        document.getElementById('gananciaPotencial').textContent = '$' + (ventaTotal - costoTotal).toFixed(2);
+
+        const productosBajos = productos.filter(p => p.stock <= UMBRAL_STOCK);
+        const alertaDiv = document.getElementById('alertasStock');
+        if (productosBajos.length > 0) {
+            alertaDiv.classList.remove('hidden');
+            document.getElementById('listaAlertas').textContent = productosBajos.map(p => `${p.nombre} (${p.stock})`).join(', ');
+        } else {
+            alertaDiv.classList.add('hidden');
+        }
+    }
+
+    // ----- ADMIN: EDITAR PRODUCTO -----
+    function abrirModalEditarProducto(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const categorias = getCategorias();
+        let catOptions = '<option value="">Seleccionar</option>';
+        categorias.forEach(c => {
+            catOptions += `<option value="${c.nombre}" ${c.nombre === p.categoria ? 'selected' : ''}>${c.nombre}</option>`;
+        });
+        indiceEditar = index;
+        document.getElementById('modalAdminTitulo').textContent = '✏️ Editar producto';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="e_nombre" type="text" value="${p.nombre}"></div>
+            <div class="input-group"><label>Categoría</label><select id="e_categoria" onchange="actualizarSubcategoriasEditar()">${catOptions}</select></div>
+            <div class="input-group"><label>Subcategoría</label><select id="e_subcategoria"><option value="">Ninguna</option></select></div>
+            <div class="input-group"><label>P.Compra</label><input id="e_compra" type="number" step="0.01" value="${p.precioCompra}"></div>
+            <div class="input-group"><label>P.Venta</label><input id="e_venta" type="number" step="0.01" value="${p.precioVenta}"></div>
+            <div class="input-group"><label>Stock</label><input id="e_stock" type="number" value="${p.stock}"></div>
+            <button class="btn btn-success" onclick="guardarEdicionProducto(${index})">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+        setTimeout(actualizarSubcategoriasEditar, 100);
+    }
+
+    function actualizarSubcategoriasEditar() {
+        const categoriaSel = document.getElementById('e_categoria');
+        const subcatSel = document.getElementById('e_subcategoria');
+        const categorias = getCategorias();
+        const cat = categorias.find(c => c.nombre === categoriaSel.value);
+        const productos = getProductos();
+        const p = productos[indiceEditar];
+        subcatSel.innerHTML = '<option value="">Ninguna</option>';
+        if (cat && cat.subcategorias) {
+            cat.subcategorias.forEach(sub => {
+                subcatSel.innerHTML += `<option value="${sub}" ${sub === p.subcategoria ? 'selected' : ''}>${sub}</option>`;
+            });
+        }
+    }
+
+    function guardarEdicionProducto(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const nombre = document.getElementById('e_nombre').value.trim();
+        const categoria = document.getElementById('e_categoria').value;
+        const subcategoria = document.getElementById('e_subcategoria').value;
+        const precioCompra = parseFloat(document.getElementById('e_compra').value);
+        const precioVenta = parseFloat(document.getElementById('e_venta').value);
+        const stock = parseInt(document.getElementById('e_stock').value) || 0;
+        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios');
+        p.nombre = nombre;
+        p.categoria = categoria;
+        p.subcategoria = subcategoria;
+        p.precioCompra = precioCompra;
+        p.precioVenta = precioVenta;
+        p.stock = stock;
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje('✅ Producto actualizado');
+    }
+
+    // ----- ADMIN: AGREGAR PRODUCTO -----
+    function abrirModalAgregar() {
+        const categorias = getCategorias();
+        let catOptions = '<option value="">Seleccionar</option>';
+        categorias.forEach(c => catOptions += `<option value="${c.nombre}">${c.nombre}</option>`);
+        document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="f_nombre" type="text" placeholder="Nombre"></div>
+            <div class="input-group"><label>Categoría</label><select id="f_categoria" onchange="actualizarSubcategorias()">${catOptions}</select></div>
+            <div class="input-group"><label>Subcategoría</label><select id="f_subcategoria"><option value="">Ninguna</option></select></div>
+            <div class="input-group"><label>P.Compra</label><input id="f_compra" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="input-group"><label>P.Venta</label><input id="f_venta" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="input-group"><label>Stock inicial</label><input id="f_stock" type="number" value="0"></div>
+            <button class="btn btn-success" onclick="guardarProductoAdmin()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+        actualizarSubcategorias();
+    }
+
+    function actualizarSubcategorias() {
+        const categoriaSel = document.getElementById('f_categoria');
+        const subcatSel = document.getElementById('f_subcategoria');
+        const categorias = getCategorias();
+        const cat = categorias.find(c => c.nombre === categoriaSel.value);
+        subcatSel.innerHTML = '<option value="">Ninguna</option>';
+        if (cat && cat.subcategorias) {
+            cat.subcategorias.forEach(sub => subcatSel.innerHTML += `<option value="${sub}">${sub}</option>`);
+        }
+    }
+
+    function guardarProductoAdmin() {
+        const nombre = document.getElementById('f_nombre').value.trim();
+        const categoria = document.getElementById('f_categoria').value;
+        const subcategoria = document.getElementById('f_subcategoria').value;
+        const precioCompra = parseFloat(document.getElementById('f_compra').value);
+        const precioVenta = parseFloat(document.getElementById('f_venta').value);
+        const stock = parseInt(document.getElementById('f_stock').value) || 0;
+        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios');
+        const productos = getProductos();
+        productos.push({ nombre, categoria, subcategoria, precioCompra, precioVenta, stock });
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje('✅ Producto agregado');
+    }
+
+    // ----- ADMIN: MOVIMIENTO -----
+    function abrirModalMovimientoAdmin(index) {
+        indiceAdmin = index;
+        const p = getProductos()[index];
+        const clientes = getClientes();
+        let clienteOptions = '<option value="">Sin cliente</option>';
+        clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
+        document.getElementById('modalAdminTitulo').textContent = `📦 ${p.nombre}`;
+        document.getElementById('modalAdminBody').innerHTML = `
+            <p><strong>Stock actual:</strong> ${p.stock}</p>
+            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_admin" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Cliente</label><select id="f_cliente_admin">${clienteOptions}</select></div>
+            <div class="input-group"><label>Vendedor</label><input id="f_vendedor_admin" type="text" placeholder="Nombre vendedor"></div>
+            <button class="btn btn-success" onclick="movimientoAdmin('entrada')">📥 Entrada</button>
+            <button class="btn btn-danger" onclick="movimientoAdmin('salida')" style="margin-top:8px;">📤 Salida</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function movimientoAdmin(tipo) {
+        const cantidad = parseInt(document.getElementById('f_cantidad_admin').value);
+        const vendedor = document.getElementById('f_vendedor_admin').value.trim() || 'Admin';
+        const clienteData = document.getElementById('f_cliente_admin').value;
+        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
+        const productos = getProductos();
+        const p = productos[indiceAdmin];
+        if (tipo === 'salida') {
+            if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+            p.stock -= cantidad;
+            const historial = getHistorial();
+            const ahora = new Date();
+            const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+            const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+            const venta = {
+                producto: p.nombre,
+                categoria: p.categoria || 'General',
+                subcategoria: p.subcategoria || '',
+                cantidad: cantidad,
+                precioVenta: p.precioVenta,
+                precioCompra: p.precioCompra,
+                gananciaUnidad: p.precioVenta - p.precioCompra,
+                gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
+                vendedor: vendedor,
+                cliente: cliente ? cliente.nombre : null,
+                clienteTelefono: cliente ? cliente.telefono : null,
+                fecha: fecha,
+                hora: hora,
+                timestamp: ahora.getTime()
+            };
+            historial.push(venta);
+            guardarHistorial(historial);
+            mostrarTicket(venta);
+        } else {
+            p.stock += cantidad;
+        }
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Stock: ${p.stock}`);
+    }
+
+    // ----- ADMIN: ELIMINAR PRODUCTO -----
+    function confirmarEliminarAdmin(index) {
+        if (confirm('¿Eliminar este producto?')) {
+            let productos = getProductos();
+            productos.splice(index, 1);
+            guardarProductos(productos);
+            renderizarAdmin();
+            mostrarMensaje('🗑️ Producto eliminado');
+        }
+    }
+
+    // ----- ADMIN: MERMA RÁPIDA -----
+    function abrirModalMermaRapida(index) {
+        const p = getProductos()[index];
+        document.getElementById('modalAdminTitulo').textContent = '📉 Merma rápida';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <p><strong>${p.nombre}</strong> - Stock: ${p.stock}</p>
+            <div class="input-group"><label>Cantidad</label><input id="f_merma_rapida_cant" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Motivo</label><input id="f_merma_rapida_motivo" type="text" placeholder="Motivo"></div>
+            <button class="btn btn-danger" onclick="guardarMermaRapida(${index})">✅ Registrar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarMermaRapida(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const cantidad = parseInt(document.getElementById('f_merma_rapida_cant').value);
+        const motivo = document.getElementById('f_merma_rapida_motivo').value.trim() || 'Sin especificar';
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
+        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+        const costo = p.precioCompra * cantidad;
+        p.stock -= cantidad;
+        guardarProductos(productos);
+        const mermas = getMermas();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        mermas.push({ producto: p.nombre, cantidad, motivo, costo, fecha, timestamp: ahora.getTime() });
+        guardarMermas(mermas);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        renderizarMermas();
+        mostrarMensaje('📉 Merma registrada');
     }
 
     // ----- CLIENTES -----
@@ -587,421 +854,6 @@
     function cerrarModalTicket() {
         document.getElementById('modalTicket').classList.remove('active');
     }
-
-    // ----- UTILIDADES MODALES -----
-    function cerrarModalAdmin() { document.getElementById('modalAdmin').classList.remove('active'); }
-    function cerrarModalVendedor() { document.getElementById('modalVendedor').classList.remove('active'); }
-
-    function mostrarMensaje(texto) {
-        const existente = document.querySelector('.mensaje-flotante');
-        if (existente) existente.remove();
-        const div = document.createElement('div');
-        div.className = 'mensaje-flotante';
-        div.textContent = texto;
-        document.body.appendChild(div);
-        setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
-    }
-
-    // FIN PARTE 2
-
-        <script>
-    // ============================================================
-    // PARTE 3: INVENTARIO, MOVIMIENTOS, VENDEDOR
-    // ============================================================
-
-    // ----- ADMIN: RENDERIZAR INVENTARIO -----
-    function renderizarAdmin() {
-        const productos = getProductos();
-        const busqueda = document.getElementById('buscarAdmin').value.toLowerCase().trim();
-        const filtrados = busqueda === '' ? productos : productos.filter(p => 
-            p.nombre.toLowerCase().includes(busqueda) || 
-            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
-            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
-        );
-        const tbody = document.getElementById('cuerpoAdmin');
-        if (filtrados.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
-        } else {
-            tbody.innerHTML = filtrados.map((p, index) => {
-                const realIndex = productos.indexOf(p);
-                const bajoStock = p.stock <= UMBRAL_STOCK;
-                return `
-                    <tr>
-                        <td><strong>${p.nombre}</strong><br><small style="color:rgba(255,255,255,0.4);">${p.categoria || 'General'}${p.subcategoria ? ' → ' + p.subcategoria : ''}</small></td>
-                        <td>$${p.precioCompra.toFixed(2)}</td>
-                        <td>$${p.precioVenta.toFixed(2)}</td>
-                        <td><span class="badge-stock ${bajoStock ? 'badge-bajo' : ''}">${p.stock} ${bajoStock ? '⚠️' : ''}</span></td>
-                        <td>
-                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                                <button class="btn btn-primary btn-sm" onclick="abrirModalEditarProducto(${realIndex})">✏️</button>
-                                <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${realIndex})">📦</button>
-                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${realIndex})">🗑️</button>
-                                <button class="btn btn-danger btn-sm" onclick="abrirModalMermaRapida(${realIndex})" style="background:#c62828;">📉</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-        let costoTotal = 0, ventaTotal = 0;
-        productos.forEach(p => { costoTotal += p.precioCompra * p.stock; ventaTotal += p.precioVenta * p.stock; });
-        document.getElementById('totalCosto').textContent = '$' + costoTotal.toFixed(2);
-        document.getElementById('totalVenta').textContent = '$' + ventaTotal.toFixed(2);
-        document.getElementById('gananciaPotencial').textContent = '$' + (ventaTotal - costoTotal).toFixed(2);
-
-        const productosBajos = productos.filter(p => p.stock <= UMBRAL_STOCK);
-        const alertaDiv = document.getElementById('alertasStock');
-        if (productosBajos.length > 0) {
-            alertaDiv.classList.remove('hidden');
-            document.getElementById('listaAlertas').textContent = productosBajos.map(p => `${p.nombre} (${p.stock})`).join(', ');
-        } else {
-            alertaDiv.classList.add('hidden');
-        }
-    }
-
-    // ----- ADMIN: EDITAR PRODUCTO -----
-    function abrirModalEditarProducto(index) {
-        const productos = getProductos();
-        const p = productos[index];
-        const categorias = getCategorias();
-        let catOptions = '<option value="">Seleccionar</option>';
-        categorias.forEach(c => {
-            catOptions += `<option value="${c.nombre}" ${c.nombre === p.categoria ? 'selected' : ''}>${c.nombre}</option>`;
-        });
-        document.getElementById('modalAdminTitulo').textContent = '✏️ Editar producto';
-        document.getElementById('modalAdminBody').innerHTML = `
-            <div class="input-group"><label>Nombre *</label><input id="e_nombre" type="text" value="${p.nombre}"></div>
-            <div class="input-group"><label>Categoría</label><select id="e_categoria" onchange="actualizarSubcategoriasEditar()">${catOptions}</select></div>
-            <div class="input-group"><label>Subcategoría</label><select id="e_subcategoria"><option value="">Ninguna</option></select></div>
-            <div class="input-group"><label>P.Compra</label><input id="e_compra" type="number" step="0.01" value="${p.precioCompra}"></div>
-            <div class="input-group"><label>P.Venta</label><input id="e_venta" type="number" step="0.01" value="${p.precioVenta}"></div>
-            <div class="input-group"><label>Stock</label><input id="e_stock" type="number" value="${p.stock}"></div>
-            <button class="btn btn-success" onclick="guardarEdicionProducto(${index})">✅ Guardar</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-        setTimeout(actualizarSubcategoriasEditar, 100);
-    }
-
-    function actualizarSubcategoriasEditar() {
-        const categoriaSel = document.getElementById('e_categoria');
-        const subcatSel = document.getElementById('e_subcategoria');
-        const categorias = getCategorias();
-        const cat = categorias.find(c => c.nombre === categoriaSel.value);
-        const productos = getProductos();
-        const p = productos[indiceEditar];
-        subcatSel.innerHTML = '<option value="">Ninguna</option>';
-        if (cat && cat.subcategorias) {
-            cat.subcategorias.forEach(sub => {
-                subcatSel.innerHTML += `<option value="${sub}" ${sub === p.subcategoria ? 'selected' : ''}>${sub}</option>`;
-            });
-        }
-    }
-    let indiceEditar = null;
-
-    function guardarEdicionProducto(index) {
-        const productos = getProductos();
-        const p = productos[index];
-        const nombre = document.getElementById('e_nombre').value.trim();
-        const categoria = document.getElementById('e_categoria').value;
-        const subcategoria = document.getElementById('e_subcategoria').value;
-        const precioCompra = parseFloat(document.getElementById('e_compra').value);
-        const precioVenta = parseFloat(document.getElementById('e_venta').value);
-        const stock = parseInt(document.getElementById('e_stock').value) || 0;
-        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios');
-        p.nombre = nombre;
-        p.categoria = categoria;
-        p.subcategoria = subcategoria;
-        p.precioCompra = precioCompra;
-        p.precioVenta = precioVenta;
-        p.stock = stock;
-        guardarProductos(productos);
-        cerrarModalAdmin();
-        renderizarAdmin();
-        mostrarMensaje('✅ Producto actualizado');
-    }
-
-    // ----- ADMIN: AGREGAR PRODUCTO -----
-    function abrirModalAgregar() {
-        const categorias = getCategorias();
-        let catOptions = '<option value="">Seleccionar</option>';
-        categorias.forEach(c => catOptions += `<option value="${c.nombre}">${c.nombre}</option>`);
-        document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
-        document.getElementById('modalAdminBody').innerHTML = `
-            <div class="input-group"><label>Nombre *</label><input id="f_nombre" type="text" placeholder="Nombre"></div>
-            <div class="input-group"><label>Categoría</label><select id="f_categoria" onchange="actualizarSubcategorias()">${catOptions}</select></div>
-            <div class="input-group"><label>Subcategoría</label><select id="f_subcategoria"><option value="">Ninguna</option></select></div>
-            <div class="input-group"><label>P.Compra</label><input id="f_compra" type="number" step="0.01" placeholder="0.00"></div>
-            <div class="input-group"><label>P.Venta</label><input id="f_venta" type="number" step="0.01" placeholder="0.00"></div>
-            <div class="input-group"><label>Stock inicial</label><input id="f_stock" type="number" value="0"></div>
-            <button class="btn btn-success" onclick="guardarProductoAdmin()">✅ Guardar</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-        actualizarSubcategorias();
-    }
-
-    function actualizarSubcategorias() {
-        const categoriaSel = document.getElementById('f_categoria');
-        const subcatSel = document.getElementById('f_subcategoria');
-        const categorias = getCategorias();
-        const cat = categorias.find(c => c.nombre === categoriaSel.value);
-        subcatSel.innerHTML = '<option value="">Ninguna</option>';
-        if (cat && cat.subcategorias) {
-            cat.subcategorias.forEach(sub => subcatSel.innerHTML += `<option value="${sub}">${sub}</option>`);
-        }
-    }
-
-    function guardarProductoAdmin() {
-        const nombre = document.getElementById('f_nombre').value.trim();
-        const categoria = document.getElementById('f_categoria').value;
-        const subcategoria = document.getElementById('f_subcategoria').value;
-        const precioCompra = parseFloat(document.getElementById('f_compra').value);
-        const precioVenta = parseFloat(document.getElementById('f_venta').value);
-        const stock = parseInt(document.getElementById('f_stock').value) || 0;
-        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios');
-        const productos = getProductos();
-        productos.push({ nombre, categoria, subcategoria, precioCompra, precioVenta, stock });
-        guardarProductos(productos);
-        cerrarModalAdmin();
-        renderizarAdmin();
-        mostrarMensaje('✅ Producto agregado');
-    }
-
-    // ----- ADMIN: MOVIMIENTO -----
-    let indiceAdmin = null;
-    function abrirModalMovimientoAdmin(index) {
-        indiceAdmin = index;
-        const p = getProductos()[index];
-        const clientes = getClientes();
-        let clienteOptions = '<option value="">Sin cliente</option>';
-        clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
-        document.getElementById('modalAdminTitulo').textContent = `📦 ${p.nombre}`;
-        document.getElementById('modalAdminBody').innerHTML = `
-            <p><strong>Stock actual:</strong> ${p.stock}</p>
-            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_admin" type="number" min="1" placeholder="Cantidad"></div>
-            <div class="input-group"><label>Cliente</label><select id="f_cliente_admin">${clienteOptions}</select></div>
-            <div class="input-group"><label>Vendedor</label><input id="f_vendedor_admin" type="text" placeholder="Nombre vendedor"></div>
-            <button class="btn btn-success" onclick="movimientoAdmin('entrada')">📥 Entrada</button>
-            <button class="btn btn-danger" onclick="movimientoAdmin('salida')" style="margin-top:8px;">📤 Salida</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-    }
-
-    function movimientoAdmin(tipo) {
-        const cantidad = parseInt(document.getElementById('f_cantidad_admin').value);
-        const vendedor = document.getElementById('f_vendedor_admin').value.trim() || 'Admin';
-        const clienteData = document.getElementById('f_cliente_admin').value;
-        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
-        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
-        const productos = getProductos();
-        const p = productos[indiceAdmin];
-        if (tipo === 'salida') {
-            if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
-            p.stock -= cantidad;
-            const historial = getHistorial();
-            const ahora = new Date();
-            const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
-            const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
-            const venta = {
-                producto: p.nombre,
-                categoria: p.categoria || 'General',
-                subcategoria: p.subcategoria || '',
-                cantidad: cantidad,
-                precioVenta: p.precioVenta,
-                precioCompra: p.precioCompra,
-                gananciaUnidad: p.precioVenta - p.precioCompra,
-                gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
-                vendedor: vendedor,
-                cliente: cliente ? cliente.nombre : null,
-                clienteTelefono: cliente ? cliente.telefono : null,
-                fecha: fecha,
-                hora: hora,
-                timestamp: ahora.getTime()
-            };
-            historial.push(venta);
-            guardarHistorial(historial);
-            mostrarTicket(venta);
-        } else {
-            p.stock += cantidad;
-        }
-        guardarProductos(productos);
-        cerrarModalAdmin();
-        renderizarAdmin();
-        mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Stock: ${p.stock}`);
-    }
-
-    // ----- ADMIN: ELIMINAR PRODUCTO -----
-    function confirmarEliminarAdmin(index) {
-        if (confirm('¿Eliminar este producto?')) {
-            let productos = getProductos();
-            productos.splice(index, 1);
-            guardarProductos(productos);
-            renderizarAdmin();
-            mostrarMensaje('🗑️ Producto eliminado');
-        }
-    }
-
-    // ----- ADMIN: MERMA RÁPIDA -----
-    function abrirModalMermaRapida(index) {
-        const p = getProductos()[index];
-        document.getElementById('modalAdminTitulo').textContent = '📉 Merma rápida';
-        document.getElementById('modalAdminBody').innerHTML = `
-            <p><strong>${p.nombre}</strong> - Stock: ${p.stock}</p>
-            <div class="input-group"><label>Cantidad</label><input id="f_merma_rapida_cant" type="number" min="1" placeholder="Cantidad"></div>
-            <div class="input-group"><label>Motivo</label><input id="f_merma_rapida_motivo" type="text" placeholder="Motivo"></div>
-            <button class="btn btn-danger" onclick="guardarMermaRapida(${index})">✅ Registrar</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-    }
-
-    function guardarMermaRapida(index) {
-        const productos = getProductos();
-        const p = productos[index];
-        const cantidad = parseInt(document.getElementById('f_merma_rapida_cant').value);
-        const motivo = document.getElementById('f_merma_rapida_motivo').value.trim() || 'Sin especificar';
-        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
-        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
-        const costo = p.precioCompra * cantidad;
-        p.stock -= cantidad;
-        guardarProductos(productos);
-        const mermas = getMermas();
-        const ahora = new Date();
-        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
-        mermas.push({ producto: p.nombre, cantidad, motivo, costo, fecha, timestamp: ahora.getTime() });
-        guardarMermas(mermas);
-        cerrarModalAdmin();
-        renderizarAdmin();
-        renderizarMermas();
-        mostrarMensaje('📉 Merma registrada');
-    }
-
-    // ----- VENDEDOR -----
-    function renderizarVendedor() {
-        const productos = getProductos();
-        const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
-        const filtrados = busqueda === '' ? productos : productos.filter(p => 
-            p.nombre.toLowerCase().includes(busqueda) || 
-            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
-            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
-        );
-        const contenedor = document.getElementById('listaProductosVenta');
-        if (filtrados.length === 0) {
-            contenedor.innerHTML = `<p class="text-center" style="color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</p>`;
-            return;
-        }
-        contenedor.innerHTML = filtrados.map((p, index) => {
-            const realIndex = productos.indexOf(p);
-            const bajoStock = p.stock <= UMBRAL_STOCK;
-            return `
-                <div class="producto-venta" style="${bajoStock ? 'background:rgba(255,23,68,0.05);' : ''}">
-                    <div>
-                        <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
-                        <span class="stock">Stock: ${p.stock}</span>
-                        <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
-                    </div>
-                    <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
-                </div>
-            `;
-        }).join('');
-        mostrarMisVentas();
-    }
-
-    let indiceVenta = null;
-    function abrirModalVenta(index) {
-        indiceVenta = index;
-        const p = getProductos()[index];
-        const clientes = getClientes();
-        let clienteOptions = '<option value="">Sin cliente</option>';
-        clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
-        document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
-        document.getElementById('modalVendedorBody').innerHTML = `
-            <p><strong>Stock:</strong> ${p.stock} | <strong>Precio:</strong> $${p.precioVenta.toFixed(2)}</p>
-            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
-            <div class="input-group"><label>Cliente</label><select id="f_cliente_venta">${clienteOptions}</select></div>
-            <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
-            <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
-        `;
-        document.getElementById('modalVendedor').classList.add('active');
-    }
-
-    function confirmarVenta() {
-        const cantidad = parseInt(document.getElementById('f_cantidad_venta').value);
-        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
-        const productos = getProductos();
-        const p = productos[indiceVenta];
-        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
-        p.stock -= cantidad;
-        guardarProductos(productos);
-
-        const clienteData = document.getElementById('f_cliente_venta').value;
-        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
-        const historial = getHistorial();
-        const ahora = new Date();
-        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
-        const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
-        const venta = {
-            producto: p.nombre,
-            categoria: p.categoria || 'General',
-            subcategoria: p.subcategoria || '',
-            cantidad: cantidad,
-            precioVenta: p.precioVenta,
-            precioCompra: p.precioCompra,
-            gananciaUnidad: p.precioVenta - p.precioCompra,
-            gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
-            vendedor: vendedorNombre,
-            cliente: cliente ? cliente.nombre : null,
-            clienteTelefono: cliente ? cliente.telefono : null,
-            fecha: fecha,
-            hora: hora,
-            timestamp: ahora.getTime()
-        };
-        historial.push(venta);
-        guardarHistorial(historial);
-        cerrarModalVendedor();
-        renderizarVendedor();
-        mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre}`);
-        mostrarTicket(venta);
-        if (confirm('📲 ¿Enviar ticket por WhatsApp?')) {
-            document.getElementById('modalTicket').classList.add('active');
-        }
-    }
-
-    function mostrarMisVentas() {
-        const historial = getHistorial();
-        const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
-        const contenedor = document.getElementById('listaVentasVendedor');
-        if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p>'; return; }
-        contenedor.innerHTML = misVentas.slice().reverse().map(v => `
-            <div class="historial-item">
-                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
-                <div class="detalles">
-                    <span>Cant: ${v.cantidad}</span>
-                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
-                    <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
-                    ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function cambiarPestanaVendedor(seccion) {
-        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
-        if (seccion === 'vender') {
-            document.getElementById('vendedorVender').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
-        } else {
-            document.getElementById('vendedorMisVentas').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
-            mostrarMisVentas();
-        }
-    }
-
-    // FIN PARTE 3
-
-        <script>
-    // ============================================================
-    // PARTE 4: PROVEEDORES, CATEGORÍAS, GASTOS, MERMAS, HISTORIAL, REPORTES, CONFIG, RESPALDOS
-    // ============================================================
 
     // ----- PROVEEDORES -----
     function renderizarProveedores() {
@@ -1384,6 +1236,127 @@
         mostrarMensaje('✅ PIN cambiado');
     }
 
+    // ----- VENDEDOR -----
+    function renderizarVendedor() {
+        const productos = getProductos();
+        const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
+            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
+        );
+        const contenedor = document.getElementById('listaProductosVenta');
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<p class="text-center" style="color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</p>`;
+            return;
+        }
+        contenedor.innerHTML = filtrados.map((p, index) => {
+            const realIndex = productos.indexOf(p);
+            const bajoStock = p.stock <= UMBRAL_STOCK;
+            return `
+                <div class="producto-venta" style="${bajoStock ? 'background:rgba(255,23,68,0.05);' : ''}">
+                    <div>
+                        <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
+                        <span class="stock">Stock: ${p.stock}</span>
+                        <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+                    </div>
+                    <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
+                </div>
+            `;
+        }).join('');
+        mostrarMisVentas();
+    }
+
+    function abrirModalVenta(index) {
+        indiceVenta = index;
+        const p = getProductos()[index];
+        const clientes = getClientes();
+        let clienteOptions = '<option value="">Sin cliente</option>';
+        clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
+        document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
+        document.getElementById('modalVendedorBody').innerHTML = `
+            <p><strong>Stock:</strong> ${p.stock} | <strong>Precio:</strong> $${p.precioVenta.toFixed(2)}</p>
+            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Cliente</label><select id="f_cliente_venta">${clienteOptions}</select></div>
+            <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
+            <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
+        `;
+        document.getElementById('modalVendedor').classList.add('active');
+    }
+
+    function confirmarVenta() {
+        const cantidad = parseInt(document.getElementById('f_cantidad_venta').value);
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
+        const productos = getProductos();
+        const p = productos[indiceVenta];
+        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+        p.stock -= cantidad;
+        guardarProductos(productos);
+
+        const clienteData = document.getElementById('f_cliente_venta').value;
+        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
+        const historial = getHistorial();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+        const venta = {
+            producto: p.nombre,
+            categoria: p.categoria || 'General',
+            subcategoria: p.subcategoria || '',
+            cantidad: cantidad,
+            precioVenta: p.precioVenta,
+            precioCompra: p.precioCompra,
+            gananciaUnidad: p.precioVenta - p.precioCompra,
+            gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
+            vendedor: vendedorNombre,
+            cliente: cliente ? cliente.nombre : null,
+            clienteTelefono: cliente ? cliente.telefono : null,
+            fecha: fecha,
+            hora: hora,
+            timestamp: ahora.getTime()
+        };
+        historial.push(venta);
+        guardarHistorial(historial);
+        cerrarModalVendedor();
+        renderizarVendedor();
+        mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre}`);
+        mostrarTicket(venta);
+        if (confirm('📲 ¿Enviar ticket por WhatsApp?')) {
+            document.getElementById('modalTicket').classList.add('active');
+        }
+    }
+
+    function mostrarMisVentas() {
+        const historial = getHistorial();
+        const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
+        const contenedor = document.getElementById('listaVentasVendedor');
+        if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p>'; return; }
+        contenedor.innerHTML = misVentas.slice().reverse().map(v => `
+            <div class="historial-item">
+                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+                <div class="detalles">
+                    <span>Cant: ${v.cantidad}</span>
+                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                    <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
+                    ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function cambiarPestanaVendedor(seccion) {
+        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+        if (seccion === 'vender') {
+            document.getElementById('vendedorVender').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
+        } else {
+            document.getElementById('vendedorMisVentas').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
+            mostrarMisVentas();
+        }
+    }
+
     // ----- CAMBIAR PESTAÑAS ADMIN -----
     function cambiarPestanaAdmin(seccion) {
         document.querySelectorAll('#adminSection .seccion').forEach(el => el.classList.remove('active'));
@@ -1464,6 +1437,20 @@
         input.click();
     }
 
+    // ----- UTILIDADES -----
+    function cerrarModalAdmin() { document.getElementById('modalAdmin').classList.remove('active'); }
+    function cerrarModalVendedor() { document.getElementById('modalVendedor').classList.remove('active'); }
+
+    function mostrarMensaje(texto) {
+        const existente = document.querySelector('.mensaje-flotante');
+        if (existente) existente.remove();
+        const div = document.createElement('div');
+        div.className = 'mensaje-flotante';
+        div.textContent = texto;
+        document.body.appendChild(div);
+        setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
+    }
+
     // ----- INICIO -----
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('loginAdmin').classList.add('hidden');
@@ -1471,8 +1458,8 @@
     document.getElementById('adminSection').classList.add('hidden');
     document.getElementById('vendedorSection').classList.add('hidden');
     cargarConfiguracion();
-
-    // FIN PARTE 4
 </script>
 </body>
 </html>
+
+    
