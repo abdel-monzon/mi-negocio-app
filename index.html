@@ -314,6 +314,7 @@
             <button class="tab-btn" onclick="cambiarPestanaAdmin('categorias')">🏷️ Categorías</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('gastos')">💸 Gastos</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('mermas')">📉 Mermas</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('historial')">📋 Historial</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('reportes')">📊 Reportes</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('config')">⚙️ Config</button>
         </div>
@@ -397,6 +398,18 @@
                 </div>
                 <div id="listaMermas" style="margin-top:12px;">
                     <p class="text-center" style="color:#999;">Sin mermas registradas</p>
+                </div>
+            </div>
+        </div>
+                   <!-- HISTORIAL -->
+        <div id="adminHistorial" class="seccion">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">📋 Historial completo de ventas</h3>
+                    <button class="btn btn-danger btn-sm" onclick="borrarHistorialAdmin()">🗑️ Limpiar todo</button>
+                </div>
+                <div id="listaHistorialAdmin" style="max-height:500px; overflow-y:auto; margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin ventas registradas</p>
                 </div>
             </div>
         </div>
@@ -842,41 +855,56 @@
 
     // ---------- ADMIN: HISTORIAL ----------
     function mostrarHistorialAdmin() {
-        const historial = getHistorial();
-        const contenedor = document.getElementById('listaHistorialAdmin');
-        if (historial.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin ventas</p>'; return; }
-        contenedor.innerHTML = historial.slice().reverse().map(v => `
-            <div class="historial-item">
-                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+    const historial = getHistorial();
+    const contenedor = document.getElementById('listaHistorialAdmin');
+    if (historial.length === 0) {
+        contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin ventas registradas</p>';
+        return;
+    }
+    // Mostrar de más reciente a más antigua
+    contenedor.innerHTML = historial.slice().reverse().map((v, index) => {
+        const realIndex = historial.length - 1 - index; // índice real en el array original
+        return `
+            <div class="historial-item" style="border-left-color: #1a4c8a;">
+                <div class="row">
+                    <strong>${v.producto}</strong>
+                    <span>${v.fecha} ${v.hora}</span>
+                </div>
                 <div class="detalles">
                     <span>Cant: ${v.cantidad}</span>
                     <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
-                    <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
+                    <span style="color:#2e7d32;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
                     <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarVenta(${realIndex})" style="margin-left:8px;">🗑️</button>
                 </div>
             </div>
-        `).join('');
+        `;
+    }).join('');
     }
-
     function borrarHistorialAdmin() {
-        if (confirm('¿Eliminar todo el historial?')) { guardarHistorial([]); mostrarHistorialAdmin(); mostrarMensaje('🗑️ Historial limpiado'); }
+    if (confirm('¿Eliminar TODO el historial de ventas? Esta acción no se puede deshacer.')) {
+        guardarHistorial([]);
+        mostrarHistorialAdmin();
+        mostrarMensaje('🗑️ Historial limpiado por completo');
+    }
     }
 
     function cambiarPestanaAdmin(seccion) {
         document.querySelectorAll('#adminSection .seccion').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
-        const map = {
-            'inventario': 'adminInventario',
-            'proveedores': 'adminProveedores',
-            'categorias': 'adminCategorias',
-            'gastos': 'adminGastos',
-            'mermas': 'adminMermas',
-            'reportes': 'adminReportes',
-            'config': 'adminConfig'
-        };
+    const map = {
+        'inventario': 'adminInventario',
+        'proveedores': 'adminProveedores',
+        'categorias': 'adminCategorias',
+        'gastos': 'adminGastos',
+        'mermas': 'adminMermas',
+        'historial': 'adminHistorial',
+        'reportes': 'adminReportes',
+        'config': 'adminConfig'
+    };
         document.getElementById(map[seccion]).classList.add('active');
         const btns = document.querySelectorAll('#adminSection .tab-btn');
-        const idx = ['inventario','proveedores','categorias','gastos','mermas','reportes','config'].indexOf(seccion);
+        const idx = ['inventario','proveedores','categorias','gastos','mermas','historial','reportes','config'].indexOf(seccion);
         if (idx !== -1) btns[idx].classList.add('active');
 
         if (seccion === 'proveedores') renderizarProveedores();
@@ -1276,10 +1304,10 @@ function eliminarMerma(index) {
         if (ventasFiltradas.length === 0) {
             contenedor.innerHTML = '<p style="color:#999;">No hay ventas en este período</p>';
         } else {
-            let html = '<table class="tabla-productos"><thead><tr><th>Producto</th><th>Cant</th><th>Total</th><th>Fecha</th><th>Vendedor</th></tr></thead><tbody>';
+            let html = '<table class="tabla-productos"><thead><tr><th>Producto</th><th>Cant</th><th>Total</th><th>Ganancia</th><th>Fecha</th><th>Vendedor</th></tr></thead><tbody>';
             ventasFiltradas.slice().reverse().forEach(v => {
-                html += `<tr><td>${v.producto}</td><td>${v.cantidad}</td><td>$${(v.precioVenta * v.cantidad).toFixed(2)}</td><td>${v.fecha}</td><td>${v.vendedor}</td></tr>`;
-            });
+                html += `<tr><td>${v.producto}</td><td>${v.cantidad}</td><td>$${(v.precioVenta * v.cantidad).toFixed(2)}</td><td style="color:#2e7d32;">+$${v.gananciaTotal.toFixed(2)}</td><td>${v.fecha}</td><td>${v.vendedor}</td></tr>`;
+        });
             html += '</tbody></table>';
             contenedor.innerHTML = html;
         }
@@ -1567,6 +1595,18 @@ function eliminarMerma(index) {
         div.textContent = texto;
         document.body.appendChild(div);
         setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
+    }.  
+    function eliminarVenta(index) {
+        if (confirm('¿Eliminar esta venta del historial? Esta acción no se puede deshacer.')) {
+        let historial = getHistorial();
+        historial.splice(index, 1);
+        guardarHistorial(historial);
+        // Refrescar la vista actual (si estamos en historial o reportes)
+        mostrarHistorialAdmin();
+        // Si estamos en reportes, recargar el reporte actual (opcional)
+        // Como no sabemos qué pestaña está activa, simplemente refrescamos el historial
+        mostrarMensaje('🗑️ Venta eliminada del historial');
+    }
     }
 
     // ---------- INICIO ----------
