@@ -267,7 +267,7 @@
              <div class="card">
                  <h3>🎨 Personalización</h3>
                  <div class="input-group"><label>Nombre del negocio</label><input type="text" id="nombreNegocio" placeholder="Mi Inventario Pro"></div>
-                 <div class="input-group"><label>Color principal (código hex, ej: #7c4dff)</label><input type="text" id="colorPrincipal" placeholder="#7c4dff"></div>
+                 <div class="input-group"><label>Color principal código hex, ej: #7c4dff)</label><input type="text" id="colorPrincipal" placeholder="#7c4dff"></div>
                  <div class="input-group"><label>Color secundario (código hex, ej: #ffd740)</label><input type="text" id="colorSecundario" placeholder="#ffd740"></div>
                  <div class="input-group"><label>Logo (URL de imagen)</label><input type="text" id="logoUrl" placeholder="https://ejemplo.com/logo.png"></div>
                  <button class="btn btn-primary" onclick="guardarPersonalizacion()">Guardar personalización</button>
@@ -283,28 +283,28 @@
                  <button class="btn btn-danger" onclick="cambiarPIN()">Cambiar PIN</button>
             </div>
         </div>
+    
     <!-- VENDEDOR -->
-    <div id="vendedorSection" class="hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h1 style="font-size:1.4rem;">👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
-            <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
+<div id="vendedorSection" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 style="font-size:1.4rem;">👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
+        <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
+        <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis ventas</button>
+    </div>
+    <div id="vendedorVender" class="seccion active">
+        <div class="card">
+            <h3>🛒 Productos</h3>
+            <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
+            <div id="listaProductosVenta"></div>
         </div>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
-            <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis ventas</button>
-        </div>
-        <div id="vendedorVender" class="seccion active">
-            <div class="card">
-                <h3>🛒 Productos</h3>
-                <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
-                <div id="listaProductosVenta"></div>
-            </div>
-        </div>
-        <div id="vendedorMisVentas" class="seccion">
-            <div class="card">
-                <h3>📋 Mis ventas</h3>
-                <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p></div>
-            </div>
+    </div>
+    <div id="vendedorMisVentas" class="seccion">
+        <div class="card">
+            <h3>📋 Mis ventas</h3>
+            <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p></div>
         </div>
     </div>
 </div>
@@ -1266,113 +1266,140 @@
         mostrarMensaje('✅ PIN cambiado');
     }
 
-    // ----- VENDEDOR -----
-    function renderizarVendedor() {
-        const productos = getProductos();
-        const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
-        const filtrados = busqueda === '' ? productos : productos.filter(p => 
-            p.nombre.toLowerCase().includes(busqueda) || 
-            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
-            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
-        );
-        const contenedor = document.getElementById('listaProductosVenta');
-        if (filtrados.length === 0) {
-            contenedor.innerHTML = `<p class="text-center" style="color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</p>`;
-            return;
-        }
-        contenedor.innerHTML = filtrados.map((p, index) => {
-            const realIndex = productos.indexOf(p);
-            const bajoStock = p.stock <= UMBRAL_STOCK;
-            return `
-                <div class="producto-venta" style="${bajoStock ? 'background:rgba(255,23,68,0.05);' : ''}">
-                    <div>
-                        <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
-                        <span class="stock">Stock: ${p.stock}</span>
-                        <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
-                    </div>
-                    <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
+    // ----- VENDEDOR (CORREGIDO) -----
+function renderizarVendedor() {
+    const productos = getProductos();
+    const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
+    const filtrados = busqueda === '' ? productos : productos.filter(p => 
+        p.nombre.toLowerCase().includes(busqueda) || 
+        (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
+        (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
+    );
+    const contenedor = document.getElementById('listaProductosVenta');
+    if (filtrados.length === 0) {
+        contenedor.innerHTML = `<p class="text-center" style="color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</p>`;
+        return;
+    }
+    contenedor.innerHTML = filtrados.map((p, index) => {
+        const realIndex = productos.indexOf(p);
+        const bajoStock = p.stock <= UMBRAL_STOCK;
+        return `
+            <div class="producto-venta" style="${bajoStock ? 'background:rgba(255,23,68,0.05);' : ''}">
+                <div>
+                    <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
+                    <span class="stock">Stock: ${p.stock}</span>
+                    <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
                 </div>
-            `;
-        }).join('');
-        mostrarMisVentas();
-    }
-
-    function abrirModalVenta(index) {
-        indiceVenta = index;
-        const p = getProductos()[index];
-        const clientes = getClientes();
-        let clienteOptions = '<option value="">Sin cliente</option>';
-        clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
-        document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
-        document.getElementById('modalVendedorBody').innerHTML = `
-            <p><strong>Stock:</strong> ${p.stock} | <strong>Precio:</strong> $${p.precioVenta.toFixed(2)}</p>
-            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
-            <div class="input-group"><label>Cliente</label><select id="f_cliente_venta">${clienteOptions}</select></div>
-            <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
-            <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
-        `;
-        document.getElementById('modalVendedor').classList.add('active');
-    }
-
-    function confirmarVenta() {
-        const cantidad = parseInt(document.getElementById('f_cantidad_venta').value);
-        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
-        const productos = getProductos();
-        const p = productos[indiceVenta];
-        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
-        p.stock -= cantidad;
-        guardarProductos(productos);
-
-        const clienteData = document.getElementById('f_cliente_venta').value;
-        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
-        const historial = getHistorial();
-        const ahora = new Date();
-        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
-        const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
-        const venta = {
-            producto: p.nombre,
-            categoria: p.categoria || 'General',
-            subcategoria: p.subcategoria || '',
-            cantidad: cantidad,
-            precioVenta: p.precioVenta,
-            precioCompra: p.precioCompra,
-            gananciaUnidad: p.precioVenta - p.precioCompra,
-            gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
-            vendedor: vendedorNombre,
-            cliente: cliente ? cliente.nombre : null,
-            clienteTelefono: cliente ? cliente.telefono : null,
-            fecha: fecha,
-            hora: hora,
-            timestamp: ahora.getTime()
-        };
-        historial.push(venta);
-        guardarHistorial(historial);
-        cerrarModalVendedor();
-        renderizarVendedor();
-        mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre}`);
-        mostrarTicket(venta);
-        if (confirm('📲 ¿Enviar ticket por WhatsApp?')) {
-            document.getElementById('modalTicket').classList.add('active');
-        }
-    }
-
-    function mostrarMisVentas() {
-        const historial = getHistorial();
-        const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
-        const contenedor = document.getElementById('listaVentasVendedor');
-        if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p>'; return; }
-        contenedor.innerHTML = misVentas.slice().reverse().map(v => `
-            <div class="historial-item">
-                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
-                <div class="detalles">
-                    <span>Cant: ${v.cantidad}</span>
-                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
-                    <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
-                    ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
-                </div>
+                <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
             </div>
-        `).join('');
+        `;
+    }).join('');
+    mostrarMisVentas();
+}
+
+let indiceVenta = null;
+function abrirModalVenta(index) {
+    indiceVenta = index;
+    const p = getProductos()[index];
+    const clientes = getClientes();
+    let clienteOptions = '<option value="">Sin cliente</option>';
+    clientes.forEach(c => clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`);
+    document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
+    document.getElementById('modalVendedorBody').innerHTML = `
+        <p><strong>Stock:</strong> ${p.stock} | <strong>Precio:</strong> $${p.precioVenta.toFixed(2)}</p>
+        <div class="input-group"><label>Cantidad</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
+        <div class="input-group"><label>Cliente</label><select id="f_cliente_venta">${clienteOptions}</select></div>
+        <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
+        <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
+    `;
+    document.getElementById('modalVendedor').classList.add('active');
+}
+
+function confirmarVenta() {
+    const cantidad = parseInt(document.getElementById('f_cantidad_venta').value);
+    if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad');
+    const productos = getProductos();
+    const p = productos[indiceVenta];
+    if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+    p.stock -= cantidad;
+    guardarProductos(productos);
+
+    const clienteData = document.getElementById('f_cliente_venta').value;
+    const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
+    const historial = getHistorial();
+    const ahora = new Date();
+    const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+    const venta = {
+        producto: p.nombre,
+        categoria: p.categoria || 'General',
+        subcategoria: p.subcategoria || '',
+        cantidad: cantidad,
+        precioVenta: p.precioVenta,
+        precioCompra: p.precioCompra,
+        gananciaUnidad: p.precioVenta - p.precioCompra,
+        gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
+        vendedor: vendedorNombre,
+        cliente: cliente ? cliente.nombre : null,
+        clienteTelefono: cliente ? cliente.telefono : null,
+        fecha: fecha,
+        hora: hora,
+        timestamp: ahora.getTime()
+    };
+    historial.push(venta);
+    guardarHistorial(historial);
+    cerrarModalVendedor();
+    renderizarVendedor();
+    mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre}`);
+    mostrarTicket(venta);
+    if (confirm('📲 ¿Enviar ticket por WhatsApp?')) {
+        document.getElementById('modalTicket').classList.add('active');
     }
+}
+
+function mostrarMisVentas() {
+    const historial = getHistorial();
+    const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
+    const contenedor = document.getElementById('listaVentasVendedor');
+    if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p>'; return; }
+    contenedor.innerHTML = misVentas.slice().reverse().map(v => `
+        <div class="historial-item">
+            <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+            <div class="detalles">
+                <span>Cant: ${v.cantidad}</span>
+                <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
+                ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function cambiarPestanaVendedor(seccion) {
+    // Ocultar todas
+    document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+    });
+    // Mostrar la seleccionada
+    const map = {
+        'vender': 'vendedorVender',
+        'misventas': 'vendedorMisVentas'
+    };
+    const seccionMostrar = document.getElementById(map[seccion]);
+    if (seccionMostrar) {
+        seccionMostrar.classList.add('active');
+        seccionMostrar.style.display = 'block';
+    }
+    // Actualizar pestañas
+    document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+    const btns = document.querySelectorAll('#vendedorSection .tab-btn');
+    const idx = ['vender', 'misventas'].indexOf(seccion);
+    if (idx !== -1) btns[idx].classList.add('active');
+    // Cargar datos si es necesario
+    if (seccion === 'misventas') mostrarMisVentas();
+    if (seccion === 'vender') renderizarVendedor();
+        }
 
     // ----- CAMBIAR PESTAÑAS VENDEDOR (CORREGIDO) -----
     function cambiarPestanaVendedor(seccion) {
