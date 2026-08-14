@@ -135,6 +135,8 @@
             </div>
             <div class="flex">
                 <button class="btn btn-success" onclick="abrirModalAgregar()">➕ Nuevo</button>
+                <button class="btn btn-outline" onclick="respaldarManual()">📤 Respaldo manual</button>
+                <button class="btn btn-primary" onclick="enviarRespaldoCorreoMejorado()">📧 Enviar por correo</button>
                 <button class="btn btn-outline" onclick="exportarDatos()">📤 Respaldar</button>
                 <button class="btn btn-outline" onclick="importarDatos()">📥 Restaurar</button>
             </div>
@@ -397,6 +399,8 @@
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
         mostrarMensaje('👑 Bienvenido Administrador');
+        // Verificar respaldo semanal
+        setTimeout(verificarRespaldoSemanal, 2000); // Esperar 2 segundos para no saturar
     }
 
     function entrarVendedor() {
@@ -1482,6 +1486,99 @@
         document.body.appendChild(div);
         setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
     }
+    // ============================================================
+    // RESPALDOS AUTOMÁTICOS (SEMANALES)
+    // ============================================================
+
+    // Obtener la fecha del último respaldo automático
+    function getUltimoRespaldo() {
+        try {
+            return localStorage.getItem('ultimo_respaldo_automatico') || null;
+        } catch { return null; }
+    }
+
+    // Guardar la fecha del último respaldo
+    function guardarUltimoRespaldo(fecha) {
+        localStorage.setItem('ultimo_respaldo_automatico', fecha);
+    }
+
+   // Verificar si ha pasado una semana desde el último respaldo
+   function haPasadoUnaSemana() {
+       const ultimo = getUltimoRespaldo();
+       if (!ultimo) return true; // Nunca se ha respaldado
+       const dias = Math.floor((Date.now() - parseInt(ultimo)) / (1000 * 60 * 60 * 24));
+       return dias >= 7;
+   }
+ 
+  // Generar un respaldo completo (archivo JSON)
+  function generarRespaldo() {
+      const data = JSON.stringify({
+          productos: getProductos(),
+          historial: getHistorial(),
+          clientes: getClientes(),
+          proveedores: getProveedores(),
+          categorias: getCategorias(),
+          gastos: getGastos(),
+          mermas: getMermas(),
+          config: getConfig(),
+          fecha_respaldo: new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+      });
+      return data;
+  }
+
+ // Crear y descargar el respaldo
+ function descargarRespaldoAutomatico() {
+     const data = generarRespaldo();
+     const blob = new Blob([data], {type: 'application/json'});
+     const url = URL.createObjectURL(blob);
+     const a = document.createElement('a');
+     a.href = url;
+     const fecha = new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g, '-');
+     a.download = `respaldo_semanal_${fecha}.json`;
+     a.click();
+     URL.revokeObjectURL(url);
+     guardarUltimoRespaldo(Date.now().toString());
+     mostrarMensaje('📤 Respaldo semanal guardado automáticamente');
+ }
+
+// Función que se ejecuta al iniciar sesión (admin) para verificar respaldos
+function verificarRespaldoSemanal() {
+    if (haPasadoUnaSemana()) {
+        // Preguntar si quiere respaldar ahora
+        if (confirm('📅 Ha pasado más de una semana sin respaldar. ¿Quieres hacer un respaldo automático ahora?')) {
+            descargarRespaldoAutomatico();
+        } else {
+            // Si no quiere, preguntar de nuevo en 24 horas
+            guardarUltimoRespaldo((Date.now() - 6 * 24 * 60 * 60 * 1000).toString()); // Simular que pasó 6 días
+            mostrarMensaje('⏳ Recuerda respaldar pronto. El sistema te lo recordará mañana.');
+        }
+    }
+}
+
+// Función para respaldar manualmente (ya existía exportarDatos, pero esta es mejor)
+function respaldarManual() {
+    const data = generarRespaldo();
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const fecha = new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g, '-');
+    a.download = `respaldo_manual_${fecha}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    guardarUltimoRespaldo(Date.now().toString());
+    mostrarMensaje('📤 Respaldo manual guardado');
+}
+
+// Función para enviar respaldo por correo (ya existía, la mejoramos)
+function enviarRespaldoCorreoMejorado() {
+    const data = generarRespaldo();
+    const asunto = encodeURIComponent('Respaldo completo inventario ' + new Date().toLocaleDateString('es-CU'));
+    const cuerpo = encodeURIComponent(`Aquí tienes el respaldo completo de tu inventario:\n\n${data}\n\nGuarda este archivo en un lugar seguro.`);
+    const link = `mailto:${CORREO_ADMIN}?subject=${asunto}&body=${cuerpo}`;
+    window.open(link, '_blank');
+    mostrarMensaje('📧 Abriendo correo...');
+}
 
     // ----- INICIO -----
     document.getElementById('loginScreen').classList.remove('hidden');
