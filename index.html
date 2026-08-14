@@ -82,6 +82,12 @@
         }
         .seccion { display: none; }
         .seccion.active { display: block; }
+        #vendedorSection {
+        display: block !important;
+        }
+        #vendedorSection.hidden {
+        display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -447,9 +453,21 @@ function entrarVendedor() {
     const nombre = document.getElementById('vendedorNombre').value.trim();
     if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
     vendedorNombre = nombre;
+
+    // Ocultar pantalla de login
     document.getElementById('loginVendedor').classList.add('hidden');
-    document.getElementById('vendedorSection').classList.remove('hidden');
+    document.getElementById('loginScreen').classList.add('hidden');
+
+    // Mostrar sección de vendedor
+    const vendedorSection = document.getElementById('vendedorSection');
+    vendedorSection.classList.remove('hidden');
+    vendedorSection.style.display = 'block'; // Forzar visibilidad
+
+    // Ocultar sección de admin (por si acaso)
     document.getElementById('adminSection').classList.add('hidden');
+    document.getElementById('adminSection').style.display = 'none';
+
+    // Actualizar nombre y renderizar
     document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
     renderizarVendedor();
     cambiarPestanaVendedor('vender');
@@ -1332,6 +1350,10 @@ function renderizarVendedor() {
         (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
     );
     const contenedor = document.getElementById('listaProductosVenta');
+    if (!contenedor) {
+        console.error('❌ No se encontró #listaProductosVenta');
+        return;
+    }
     if (filtrados.length === 0) {
         contenedor.innerHTML = `<p class="text-center" style="color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</p>`;
         return;
