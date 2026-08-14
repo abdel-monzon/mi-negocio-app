@@ -372,7 +372,7 @@
 
     <script>
     // ============================================================
-    // PARTE 2: DATOS, LOGIN, ADMIN INVENTARIO, MOVIMIENTOS
+    // PARTE 2 CORREGIDA: DATOS, LOGIN, ADMIN INVENTARIO, MOVIMIENTOS
     // ============================================================
 
     console.log('✅ App iniciada correctamente');
@@ -447,7 +447,7 @@
         document.getElementById('umbralStock').value = UMBRAL_STOCK;
     }
 
-    // ---------- LOGIN ----------
+    // ---------- LOGIN (CORREGIDO) ----------
     function mostrarLoginAdmin() {
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginAdmin').classList.remove('hidden');
@@ -466,32 +466,63 @@
 
     function verificarPIN() {
         const pin = document.getElementById('pinInput').value;
-        if (pin === PIN_ADMIN) { entrarAdmin(); } else { mostrarMensaje('❌ PIN incorrecto'); document.getElementById('pinInput').value = ''; }
+        if (pin === PIN_ADMIN) { 
+            entrarAdmin(); 
+        } else { 
+            mostrarMensaje('❌ PIN incorrecto'); 
+            document.getElementById('pinInput').value = ''; 
+        }
     }
 
     function entrarAdmin() {
+        console.log('✅ Entrando como administrador');
+        // Ocultar todo el login
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('loginAdmin').style.display = 'none';
+        document.getElementById('loginVendedor').style.display = 'none';
+        document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
-        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('loginVendedor').classList.add('hidden');
+        
+        // Mostrar sección de administrador
+        const adminSection = document.getElementById('adminSection');
+        adminSection.classList.remove('hidden');
+        adminSection.style.display = 'block';
+        
+        // Asegurar que vendedor esté oculto
         document.getElementById('vendedorSection').classList.add('hidden');
+        document.getElementById('vendedorSection').style.display = 'none';
+        
+        // Cargar datos y renderizar
         cargarConfiguracion();
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
-        mostrarMensaje('👑 Bienvenido Administrador');
+        
+        // Cargar personalización y verificar respaldo
         setTimeout(cargarPersonalizacion, 500);
         setTimeout(verificarRespaldoSemanal, 2000);
+        
+        mostrarMensaje('👑 Bienvenido Administrador');
     }
 
     function entrarVendedor() {
         const nombre = document.getElementById('vendedorNombre').value.trim();
-        if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
+        if (!nombre) { 
+            mostrarMensaje('⚠️ Escribe tu nombre'); 
+            return; 
+        }
         vendedorNombre = nombre;
+        console.log('✅ Entrando como vendedor: ' + vendedorNombre);
 
-        // Ocultar login
-        document.getElementById('loginVendedor').classList.add('hidden');
+        // Ocultar todo el login
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('loginVendedor').style.display = 'none';
+        document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('loginVendedor').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
 
-        // Mostrar vendedor
+        // Mostrar sección de vendedor
         const vendedorSection = document.getElementById('vendedorSection');
         vendedorSection.classList.remove('hidden');
         vendedorSection.style.display = 'block';
@@ -500,22 +531,34 @@
         document.getElementById('adminSection').classList.add('hidden');
         document.getElementById('adminSection').style.display = 'none';
 
+        // Actualizar nombre y renderizar
         document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
         renderizarVendedor();
         cambiarPestanaVendedor('vender');
+        
         mostrarMensaje('👤 Bienvenido ' + vendedorNombre);
     }
 
     function cerrarSesion() {
         if (confirm('¿Cerrar sesión?')) {
+            // Ocultar todo
             document.getElementById('adminSection').classList.add('hidden');
             document.getElementById('adminSection').style.display = 'none';
             document.getElementById('vendedorSection').classList.add('hidden');
             document.getElementById('vendedorSection').style.display = 'none';
+            
+            // Mostrar login
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('loginAdmin').classList.add('hidden');
+            document.getElementById('loginAdmin').style.display = 'none';
+            document.getElementById('loginVendedor').classList.add('hidden');
+            document.getElementById('loginVendedor').style.display = 'none';
+            
+            // Limpiar campos
             document.getElementById('pinInput').value = '';
             document.getElementById('vendedorNombre').value = '';
+            
             mostrarMensaje('🔒 Sesión cerrada');
         }
     }
@@ -794,7 +837,26 @@
         mostrarMensaje('📉 Merma registrada');
     }
 
+    // ---------- INICIALIZACIÓN DE LOGIN ----------
+    // Asegurar que al cargar la página se muestre el login
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ DOM cargado, inicializando login...');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('loginAdmin').style.display = 'none';
+        document.getElementById('loginVendedor').classList.add('hidden');
+        document.getElementById('loginVendedor').style.display = 'none';
+        document.getElementById('adminSection').classList.add('hidden');
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('vendedorSection').classList.add('hidden');
+        document.getElementById('vendedorSection').style.display = 'none';
+        cargarConfiguracion();
+    });
+
     // FIN PARTE 2
+</script>
+                 
 
         <script>
     // ============================================================
