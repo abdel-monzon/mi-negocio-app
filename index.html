@@ -98,6 +98,21 @@
         .resumen-reporte .item strong { font-size: 1.1rem; color: #ffd740; }
         .logo-img { max-height: 40px; margin-right: 10px; border-radius: 8px; }
         .nombre-negocio { font-weight: 800; color: #ffd740; }
+        /* FORZAR VISIBILIDAD DE SECCIONES */
+        #adminSection, #vendedorSection {
+            display: none !important;
+        }
+        #adminSection:not(.hidden), #vendedorSection:not(.hidden) {
+            display: block !important;
+        }
+
+        /* Asegurar que las pestañas se vean */
+        #adminSection .seccion, #vendedorSection .seccion {
+            display: none !important;
+        }
+        #adminSection .seccion.active, #vendedorSection .seccion.active {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
