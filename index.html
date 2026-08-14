@@ -297,29 +297,29 @@
         </div>
     
         <!-- VENDEDOR -->
-<div id="vendedorSection" style="display:none; background: rgba(26,14,46,0.95); border-radius: 32px; padding: 16px; margin-top: 16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="font-size:1.4rem;">👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
-        <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
-    </div>
-    <div class="tabs">
-        <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
-        <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis ventas</button>
-    </div>
-    <div id="vendedorVender" class="seccion" style="display:block;">
-        <div class="card">
-            <h3>🛒 Productos</h3>
-            <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
-            <div id="listaProductosVenta"></div>
+        <div id="vendedorSection" style="display:none; background: rgba(26,14,46,0.95); border-radius: 32px; padding: 16px; margin-top: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h1 style="font-size:1.4rem;">👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
+                <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
+                <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis ventas</button>
+            </div>
+            <div id="vendedorVender" class="seccion" style="display:block;">
+                <div class="card">
+                    <h3>🛒 Productos</h3>
+                    <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
+                    <div id="listaProductosVenta"></div>
+            </div>
         </div>
-    </div>
-    <div id="vendedorMisVentas" class="seccion" style="display:none;">
-        <div class="card">
-            <h3>📋 Mis ventas</h3>
-            <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p></div>
-        </div>
-    </div>
-</div>
+        <div id="vendedorMisVentas" class="seccion" style="display:none;">
+            <div class="card">
+                <h3>📋 Mis ventas</h3>
+                <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p></div>
+            </div>
+         </div>
+      </div>
 
 <!-- MODALES -->
 <div class="modal" id="modalAdmin">
