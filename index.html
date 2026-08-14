@@ -80,14 +80,18 @@
             font-weight: 800;
             color: #ffd740;
         }
-        .seccion { display: none; }
-        .seccion.active { display: block; }
         #vendedorSection {
-        display: block !important;
+            display: none;
         }
-        #vendedorSection.hidden {
-        display: none !important;
+        #vendedorSection:not(.hidden) {
+            display: block !important;
         }
+        .seccion {
+            display: none;
+        }
+        .seccion.active {
+            display: block !important;
+        } 
     </style>
 </head>
 <body>
