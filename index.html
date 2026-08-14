@@ -292,8 +292,8 @@
             </div>
         </div>
     
-    <!-- VENDEDOR -->
-<div id="vendedorSection" class="hidden">
+        <!-- VENDEDOR -->
+<div id="vendedorSection" style="display:none; background: rgba(26,14,46,0.95); border-radius: 32px; padding: 16px; margin-top: 16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h1 style="font-size:1.4rem;">👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
         <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
@@ -302,14 +302,14 @@
         <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
         <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis ventas</button>
     </div>
-    <div id="vendedorVender" class="seccion active">
+    <div id="vendedorVender" class="seccion" style="display:block;">
         <div class="card">
             <h3>🛒 Productos</h3>
             <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
             <div id="listaProductosVenta"></div>
         </div>
     </div>
-    <div id="vendedorMisVentas" class="seccion">
+    <div id="vendedorMisVentas" class="seccion" style="display:none;">
         <div class="card">
             <h3>📋 Mis ventas</h3>
             <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin ventas</p></div>
@@ -454,23 +454,30 @@ function entrarVendedor() {
     if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
     vendedorNombre = nombre;
 
-    // Ocultar pantalla de login
-    document.getElementById('loginVendedor').classList.add('hidden');
+    // 1. Ocultar todo
     document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('loginVendedor').classList.add('hidden');
+    document.getElementById('loginVendedor').style.display = 'none';
+    document.getElementById('loginAdmin').classList.add('hidden');
+    document.getElementById('loginAdmin').style.display = 'none';
 
-    // Mostrar sección de vendedor
+    // 2. Mostrar sección de vendedor
     const vendedorSection = document.getElementById('vendedorSection');
     vendedorSection.classList.remove('hidden');
-    vendedorSection.style.display = 'block'; // Forzar visibilidad
+    vendedorSection.style.display = 'block'; // Forzar
 
-    // Ocultar sección de admin (por si acaso)
-    document.getElementById('adminSection').classList.add('hidden');
-    document.getElementById('adminSection').style.display = 'none';
+    // 3. Asegurar que el contenido de vendedor esté visible
+    document.getElementById('vendedorVender').style.display = 'block';
+    document.getElementById('vendedorMisVentas').style.display = 'none';
 
-    // Actualizar nombre y renderizar
+    // 4. Actualizar nombre
     document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
+
+    // 5. Renderizar productos y pestañas
     renderizarVendedor();
     cambiarPestanaVendedor('vender');
+
     mostrarMensaje('👤 Bienvenido ' + vendedorNombre);
 }
 
@@ -1566,23 +1573,31 @@ function cambiarPestanaAdmin(seccion) {
 }
 
 function cambiarPestanaVendedor(seccion) {
-    document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
+    // Ocultar todas las secciones
+    const secciones = document.querySelectorAll('#vendedorSection .seccion');
+    secciones.forEach(el => {
         el.classList.remove('active');
         el.style.display = 'none';
     });
+
+    // Mostrar la seleccionada
     const map = {
         'vender': 'vendedorVender',
         'misventas': 'vendedorMisVentas'
     };
-    const seccionMostrar = document.getElementById(map[seccion]);
-    if (seccionMostrar) {
-        seccionMostrar.classList.add('active');
-        seccionMostrar.style.display = 'block';
+    const mostrar = document.getElementById(map[seccion]);
+    if (mostrar) {
+        mostrar.classList.add('active');
+        mostrar.style.display = 'block';
     }
+
+    // Actualizar pestañas
     document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
     const btns = document.querySelectorAll('#vendedorSection .tab-btn');
     const idx = ['vender', 'misventas'].indexOf(seccion);
     if (idx !== -1) btns[idx].classList.add('active');
+
+    // Cargar datos si es necesario
     if (seccion === 'misventas') mostrarMisVentas();
     if (seccion === 'vender') renderizarVendedor();
 }
@@ -1750,6 +1765,22 @@ function mostrarMensaje(texto) {
     setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
 }
 
+        // Función para verificar que la sección de vendedor existe
+function verificarSeccionVendedor() {
+    const sec = document.getElementById('vendedorSection');
+    if (sec) {
+        console.log('✅ Sección vendedor encontrada');
+        // Forzar visibilidad si está oculta
+        if (sec.classList.contains('hidden')) {
+            sec.classList.remove('hidden');
+        }
+        sec.style.display = 'block';
+    } else {
+        console.error('❌ No se encontró #vendedorSection');
+    }
+}
+// Ejecutar al cargar
+setTimeout(verificarSeccionVendedor, 1000);
 // ============================================================
 // INICIO
 // ============================================================
