@@ -98,21 +98,6 @@
         .resumen-reporte .item strong { font-size: 1.1rem; color: #ffd740; }
         .logo-img { max-height: 40px; margin-right: 10px; border-radius: 8px; }
         .nombre-negocio { font-weight: 800; color: #ffd740; }
-        /* FORZAR VISIBILIDAD DE SECCIONES */
-        #adminSection, #vendedorSection {
-            display: none !important;
-        }
-        #adminSection:not(.hidden), #vendedorSection:not(.hidden) {
-            display: block !important;
-        }
-
-        /* Asegurar que las pestañas se vean */
-        #adminSection .seccion, #vendedorSection .seccion {
-            display: none !important;
-        }
-        #adminSection .seccion.active, #vendedorSection .seccion.active {
-            display: block !important;
-        }
     </style>
 </head>
 <body>
@@ -145,7 +130,7 @@
             <button class="btn btn-outline" onclick="volverLogin()" style="margin-top:8px;">Volver</button>
         </div>
     </div>
-   
+
     <!-- ============================================================ -->
     <!-- ADMINISTRADOR -->
     <!-- ============================================================ -->
@@ -870,10 +855,7 @@
     });
 
     // FIN PARTE 2
-</script>
-                 
-
-        <script>
+    <script>
     // ============================================================
     // PARTE 3: CLIENTES, PROVEEDORES, CATEGORÍAS, SUCURSALES, GASTOS, MERMAS, HISTORIAL, REPORTES
     // ============================================================
@@ -1223,6 +1205,7 @@
         let total = mermas.reduce((acc, m) => acc + m.costo, 0);
         document.getElementById('totalMermas').textContent = '$' + total.toFixed(2);
     }
+
     function abrirModalMerma() {
         const productos = getProductos();
         let options = '<option value="">Seleccionar</option>';
@@ -1864,15 +1847,10 @@
 
     // ---------- CAMBIAR PESTAÑAS ----------
     function cambiarPestanaAdmin(seccion) {
-        console.log('🔄 Cambiando a pestaña admin: ' + seccion);
-    
-        // Ocultar todas las secciones
         document.querySelectorAll('#adminSection .seccion').forEach(el => {
             el.classList.remove('active');
             el.style.display = 'none';
-        });  
-    
-        // Mostrar la seleccionada
+        });
         const map = {
             'inventario': 'adminInventario',
             'clientes': 'adminClientes',
@@ -1889,18 +1867,12 @@
         if (seccionMostrar) {
             seccionMostrar.classList.add('active');
             seccionMostrar.style.display = 'block';
-            console.log('✅ Sección mostrada: ' + map[seccion]);
-        } else {
-            console.error('❌ No se encontró la sección: ' + map[seccion]);
-        } 
-    
-        // Actualizar pestañas
+        }
         document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
         const btns = document.querySelectorAll('#adminSection .tab-btn');
         const idx = ['inventario','clientes','proveedores','categorias','sucursales','gastos','mermas','historial','reportes','config'].indexOf(seccion);
         if (idx !== -1) btns[idx].classList.add('active');
 
-        // Cargar datos según la sección
         if (seccion === 'clientes') renderizarClientes();
         if (seccion === 'proveedores') renderizarProveedores();
         if (seccion === 'categorias') renderizarCategorias();
@@ -1911,40 +1883,28 @@
         if (seccion === 'reportes') cargarReporte('dia');
     }
 
-    
     function cambiarPestanaVendedor(seccion) {
-       console.log('🔄 Cambiando a pestaña vendedor: ' + seccion);
-    
-       // Ocultar todas las secciones
-       document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
-           el.classList.remove('active');
-           el.style.display = 'none';
-       });
-    
-       // Mostrar la seleccionada
-       const map = {
-           'vender': 'vendedorVender',
-           'misventas': 'vendedorMisVentas'
-       }; 
-       const seccionMostrar = document.getElementById(map[seccion]);
-       if (seccionMostrar) {
-           seccionMostrar.classList.add('active');
-           seccionMostrar.style.display = 'block';
-           console.log('✅ Sección vendedor mostrada: ' + map[seccion]);
-       } else {
-           console.error('❌ No se encontró la sección vendedor: ' + map[seccion]);
-       }
-    
-       // Actualizar pestañas
-       document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
-       const btns = document.querySelectorAll('#vendedorSection .tab-btn');
-       const idx = ['vender', 'misventas'].indexOf(seccion);
-       if (idx !== -1) btns[idx].classList.add('active');
-    
-       // Cargar datos
-       if (seccion === 'misventas') mostrarMisVentas();
-       if (seccion === 'vender') renderizarVendedor();
+        document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+        const map = {
+            'vender': 'vendedorVender',
+            'misventas': 'vendedorMisVentas'
+        };
+        const seccionMostrar = document.getElementById(map[seccion]);
+        if (seccionMostrar) {
+            seccionMostrar.classList.add('active');
+            seccionMostrar.style.display = 'block';
+        }
+        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+        const btns = document.querySelectorAll('#vendedorSection .tab-btn');
+        const idx = ['vender', 'misventas'].indexOf(seccion);
+        if (idx !== -1) btns[idx].classList.add('active');
+        if (seccion === 'misventas') mostrarMisVentas();
+        if (seccion === 'vender') renderizarVendedor();
     }
+
     // ---------- UTILIDADES ----------
     function cerrarModalAdmin() { document.getElementById('modalAdmin').classList.remove('active'); }
     function cerrarModalVendedor() { document.getElementById('modalVendedor').classList.remove('active'); }
@@ -1970,3 +1930,4 @@
 </body>
 </html>
 <!-- FIN PARTE 4 -->
+
