@@ -593,6 +593,7 @@
 
     // ---------- ADMIN: RENDERIZAR INVENTARIO ----------
     function renderizarAdmin() {
+        console.log('📦 Renderizando inventario admin...');
         const productos = getProductos();
         const busqueda = document.getElementById('buscarAdmin').value.toLowerCase().trim();
         const filtrados = busqueda === '' ? productos : productos.filter(p => 
@@ -1487,6 +1488,7 @@
 
     // ---------- VENDEDOR ----------
     function renderizarVendedor() {
+        console.log('📦 Renderizando productos vendedor...');
         const productos = getProductos();
         const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
         const filtrados = busqueda === '' ? productos : productos.filter(p => 
