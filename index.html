@@ -1864,10 +1864,15 @@
 
     // ---------- CAMBIAR PESTAÑAS ----------
     function cambiarPestanaAdmin(seccion) {
+        console.log('🔄 Cambiando a pestaña admin: ' + seccion);
+    
+        // Ocultar todas las secciones
         document.querySelectorAll('#adminSection .seccion').forEach(el => {
             el.classList.remove('active');
             el.style.display = 'none';
-        });
+        });  
+    
+        // Mostrar la seleccionada
         const map = {
             'inventario': 'adminInventario',
             'clientes': 'adminClientes',
@@ -1884,12 +1889,18 @@
         if (seccionMostrar) {
             seccionMostrar.classList.add('active');
             seccionMostrar.style.display = 'block';
-        }
+            console.log('✅ Sección mostrada: ' + map[seccion]);
+        } else {
+            console.error('❌ No se encontró la sección: ' + map[seccion]);
+        } 
+    
+        // Actualizar pestañas
         document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
         const btns = document.querySelectorAll('#adminSection .tab-btn');
         const idx = ['inventario','clientes','proveedores','categorias','sucursales','gastos','mermas','historial','reportes','config'].indexOf(seccion);
         if (idx !== -1) btns[idx].classList.add('active');
 
+        // Cargar datos según la sección
         if (seccion === 'clientes') renderizarClientes();
         if (seccion === 'proveedores') renderizarProveedores();
         if (seccion === 'categorias') renderizarCategorias();
@@ -1900,28 +1911,40 @@
         if (seccion === 'reportes') cargarReporte('dia');
     }
 
+    
     function cambiarPestanaVendedor(seccion) {
-        document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
-            el.classList.remove('active');
-            el.style.display = 'none';
-        });
-        const map = {
-            'vender': 'vendedorVender',
-            'misventas': 'vendedorMisVentas'
-        };
-        const seccionMostrar = document.getElementById(map[seccion]);
-        if (seccionMostrar) {
-            seccionMostrar.classList.add('active');
-            seccionMostrar.style.display = 'block';
-        }
-        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
-        const btns = document.querySelectorAll('#vendedorSection .tab-btn');
-        const idx = ['vender', 'misventas'].indexOf(seccion);
-        if (idx !== -1) btns[idx].classList.add('active');
-        if (seccion === 'misventas') mostrarMisVentas();
-        if (seccion === 'vender') renderizarVendedor();
+       console.log('🔄 Cambiando a pestaña vendedor: ' + seccion);
+    
+       // Ocultar todas las secciones
+       document.querySelectorAll('#vendedorSection .seccion').forEach(el => {
+           el.classList.remove('active');
+           el.style.display = 'none';
+       });
+    
+       // Mostrar la seleccionada
+       const map = {
+           'vender': 'vendedorVender',
+           'misventas': 'vendedorMisVentas'
+       }; 
+       const seccionMostrar = document.getElementById(map[seccion]);
+       if (seccionMostrar) {
+           seccionMostrar.classList.add('active');
+           seccionMostrar.style.display = 'block';
+           console.log('✅ Sección vendedor mostrada: ' + map[seccion]);
+       } else {
+           console.error('❌ No se encontró la sección vendedor: ' + map[seccion]);
+       }
+    
+       // Actualizar pestañas
+       document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+       const btns = document.querySelectorAll('#vendedorSection .tab-btn');
+       const idx = ['vender', 'misventas'].indexOf(seccion);
+       if (idx !== -1) btns[idx].classList.add('active');
+    
+       // Cargar datos
+       if (seccion === 'misventas') mostrarMisVentas();
+       if (seccion === 'vender') renderizarVendedor();
     }
-
     // ---------- UTILIDADES ----------
     function cerrarModalAdmin() { document.getElementById('modalAdmin').classList.remove('active'); }
     function cerrarModalVendedor() { document.getElementById('modalVendedor').classList.remove('active'); }
