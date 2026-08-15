@@ -491,33 +491,40 @@
 
     function entrarAdmin() {
         console.log('✅ Entrando como administrador');
-        // Ocultar todo el login
+    
+        // 1. Ocultar todo el login
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
         document.getElementById('loginVendedor').classList.add('hidden');
-        
-        // Mostrar sección de administrador
+       
+        // 2. Mostrar sección de administrador (FORZADO)
         const adminSection = document.getElementById('adminSection');
         adminSection.classList.remove('hidden');
-        adminSection.style.display = 'block';
-        
-        // Asegurar que vendedor esté oculto
+        adminSection.style.display = 'block !important';
+        adminSection.style.visibility = 'visible';
+        adminSection.style.opacity = '1';
+    
+        // 3. Ocultar vendedor por si acaso
         document.getElementById('vendedorSection').classList.add('hidden');
         document.getElementById('vendedorSection').style.display = 'none';
-        
-        // Cargar datos y renderizar
+    
+        // 4. Cargar datos
         cargarConfiguracion();
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
-        
-        // Cargar personalización y verificar respaldo
+    
+        // 5. Cargar personalización y verificar respaldo
         setTimeout(cargarPersonalizacion, 500);
         setTimeout(verificarRespaldoSemanal, 2000);
-        
+     
         mostrarMensaje('👑 Bienvenido Administrador');
+    
+        // 6. Depuración: verificar que la sección se vea
+        console.log('Admin section visible:', adminSection.style.display);
+        console.log('Admin section class:', adminSection.className);
     }
 
     function entrarVendedor() {
@@ -529,7 +536,7 @@
         vendedorNombre = nombre;
         console.log('✅ Entrando como vendedor: ' + vendedorNombre);
 
-        // Ocultar todo el login
+        // 1. Ocultar todo el login
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
@@ -537,21 +544,27 @@
         document.getElementById('loginVendedor').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
 
-        // Mostrar sección de vendedor
+        // 2. Mostrar sección de vendedor (FORZADO)
         const vendedorSection = document.getElementById('vendedorSection');
         vendedorSection.classList.remove('hidden');
-        vendedorSection.style.display = 'block';
+        vendedorSection.style.display = 'block !important';
+        vendedorSection.style.visibility = 'visible';
+        vendedorSection.style.opacity = '1';
 
-        // Asegurar que admin esté oculto
+        // 3. Ocultar admin por si acaso
         document.getElementById('adminSection').classList.add('hidden');
         document.getElementById('adminSection').style.display = 'none';
 
-        // Actualizar nombre y renderizar
+        // 4. Actualizar nombre y renderizar
         document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
         renderizarVendedor();
         cambiarPestanaVendedor('vender');
-        
+    
         mostrarMensaje('👤 Bienvenido ' + vendedorNombre);
+    
+        // 5. Depuración
+        console.log('Vendedor section visible:', vendedorSection.style.display);
+        console.log('Vendedor section class:', vendedorSection.className);
     }
 
     function cerrarSesion() {
