@@ -343,14 +343,14 @@
     </div>
 </div>
 
-<script>
+<!-- FIN PARTE 1 -->
+    <script>
     // ============================================================
-    // SCRIPT COMPLETO
+    // PARTE 2: SCRIPT COMPLETO (DATOS, LOGIN, ADMIN INVENTARIO, MOVIMIENTOS, CLIENTES, PROVEEDORES, CATEGORÍAS, SUCURSALES)
     // ============================================================
 
     console.log('✅ App iniciada');
 
-    // ---------- VARIABLES GLOBALES ----------
     let PIN_ADMIN = '1234';
     let UMBRAL_STOCK = 5;
     let vendedorNombre = '';
@@ -443,22 +443,21 @@
     }
 
     function entrarAdmin() {
-        console.log('✅ Entrando admin');
-        // Ocultar login
+        console.log('✅ Entrando como administrador');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
         document.getElementById('loginVendedor').classList.add('hidden');
-        // Mostrar admin
+        
         const adminSection = document.getElementById('adminSection');
         adminSection.classList.remove('hidden');
         adminSection.style.display = 'block';
-        // Ocultar vendedor
+        
         document.getElementById('vendedorSection').classList.add('hidden');
         document.getElementById('vendedorSection').style.display = 'none';
-        // Cargar datos
+        
         cargarConfiguracion();
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
@@ -471,22 +470,22 @@
         const nombre = document.getElementById('vendedorNombre').value.trim();
         if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
         vendedorNombre = nombre;
-        console.log('✅ Entrando vendedor: ' + vendedorNombre);
-        // Ocultar login
+        console.log('✅ Entrando como vendedor: ' + vendedorNombre);
+
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginVendedor').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
-        // Mostrar vendedor
+
         const vendedorSection = document.getElementById('vendedorSection');
         vendedorSection.classList.remove('hidden');
         vendedorSection.style.display = 'block';
-        // Ocultar admin
+
         document.getElementById('adminSection').classList.add('hidden');
         document.getElementById('adminSection').style.display = 'none';
-        // Actualizar nombre y renderizar
+
         document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
         renderizarVendedor();
         cambiarPestanaVendedor('vender');
@@ -558,6 +557,7 @@
         }
     }
 
+    // ---------- ADMIN: AGREGAR PRODUCTO ----------
     function abrirModalAgregar() {
         const categorias = getCategorias();
         const sucursales = getSucursales();
@@ -607,6 +607,7 @@
         mostrarMensaje('✅ Producto agregado');
     }
 
+    // ---------- ADMIN: EDITAR PRODUCTO ----------
     function abrirModalEditarProducto(index) {
         const productos = getProductos();
         const p = productos[index];
@@ -672,6 +673,7 @@
         mostrarMensaje('✅ Producto actualizado');
     }
 
+    // ---------- ADMIN: MOVIMIENTO ----------
     function abrirModalMovimientoAdmin(index) {
         indiceAdmin = index;
         const p = getProductos()[index];
@@ -1048,6 +1050,12 @@
             mostrarMensaje('🗑️ Sucursal eliminada, productos reasignados a Principal');
         }
     }
+
+    // FIN PARTE 2
+
+           // ============================================================
+    // PARTE 3: GASTOS, MERMAS, HISTORIAL, REPORTES, GRÁFICOS, VENDEDOR, TICKET, PERSONALIZACIÓN, RESPALDOS, CONFIG, UTILIDADES, INICIO
+    // ============================================================
 
     // ---------- ADMIN: GASTOS ----------
     function renderizarGastos() {
@@ -1845,4 +1853,4 @@
     });
 </script>
 </body>
-</html>
+</html> 
