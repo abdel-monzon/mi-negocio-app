@@ -81,6 +81,29 @@
         #adminSection:not(.hidden), #vendedorSection:not(.hidden) { display: block; }
         .seccion { display: none; }
         .seccion.active { display: block; }
+        /* ===== FORZAR VISIBILIDAD DE SECCIONES ===== */
+        #adminSection, #vendedorSection {
+            display: none !important;
+        }
+        #adminSection:not(.hidden), #vendedorSection:not(.hidden) {
+            display: block !important;
+        }
+
+        /* Asegurar que las pestañas se vean */
+        #adminSection .seccion, #vendedorSection .seccion {
+            display: none !important;
+        }
+        #adminSection .seccion.active, #vendedorSection .seccion.active {
+            display: block !important;
+        }
+
+        /* Fondo de las secciones (para que no se vea el azul del body) */
+        #adminSection, #vendedorSection {
+            background: #1a0e2e;
+            border-radius: 32px;
+            padding: 16px;
+            margin-top: 16px;
+        } 
     </style>
 </head>
 <body>
