@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Mi Inventario - Admin / Vendedor</title>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #f4f6f9; margin: 0; padding: 16px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        .text-center { text-align: center; }
+        .btn { display: inline-block; padding: 10px 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-align: center; width: 100%; margin-top: 6px; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-primary { background: #1a4c8a; color: white; }
+        .btn-warning { background: #f5a623; color: white; }
+        .btn-danger { background: #c62828; color: white; }
+        .btn-outline { background: transparent; border: 1px solid #ccc; color: #333; }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; width: auto; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; color: #333; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem; }
+        .tabla-productos { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .tabla-productos th { background: #e9ecf2; text-align: left; padding: 8px 6px; }
+        .tabla-productos td { padding: 8px 6px; border-bottom: 1px solid #eee; }
+        .badge-stock { background: #ccc; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
+        .badge-bajo { background: #f44336; color: white; }
+        .acciones-botones { display: flex; gap: 4px; flex-wrap: wrap; }
+        .acciones-botones .btn { padding: 4px 6px; font-size: 0.7rem; width: auto; flex: 1; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 999; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; max-width: 400px; width: 90%; border-radius: 20px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { margin: 0; }
+        .close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; }
+        .seccion { display: none; }
+        .seccion.active { display: block; }
+        .mensaje-flotante { background: #323232; color: white; padding: 12px 20px; border-radius: 30px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .historial-item { background: #f8f9fa; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #2e7d32; }
+        .historial-item .row { display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .historial-item .detalles { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 4px; color: #555; flex-wrap: wrap; }
+        .vendedor-tag { background: #e0e7ff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #1a4c8a; }
+        .resumen-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .resumen-item { background: #eef2f7; border-radius: 12px; padding: 10px; text-align: center; }
+        .resumen-item small { display: block; font-size: 0.7rem; color: #555; }
+        .resumen-item strong { font-size: 1.1rem; color: #1a2b4c; }
+        .ganancia { color: #2e7d32; }
+        .producto-venta { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .producto-venta .nombre { font-weight: bold; }
+        .producto-venta .stock { font-size: 0.8rem; color: #666; }
+        .producto-venta .precio { font-size: 0.8rem; color: #1a4c8a; font-weight: bold; }
+        .btn-venta { background: #1a4c8a; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 12px; font-weight: bold; background: #e9ecf2; color: #333; cursor: pointer; }
+        .tab-btn.active { background: #1a4c8a; color: white; }
+        .hidden { display: none; }
+        .login-box { max-width: 350px; margin: 40px auto; }
+        .login-box h2 { text-align: center; margin-bottom: 20px; }
+        .whatsapp-btn { background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+        .flex { display: flex; gap: 8px; flex-wrap: wrap; }
+        .flex .btn { flex: 1; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+
+    <!-- LOGIN -->
+    <div id="loginScreen" class="login-box">
+        <div class="card">
+            <h2 class="text-center">🔐 Mi Inventario</h2>
+            <p class="text-center">Selecciona tu rol:</p>
+            <button class="btn btn-primary" onclick="mostrarLoginAdmin()">👑 Administrador</button>
+            <button class="btn btn-success" onclick="mostrarLoginVendedor()" style="margin-top:8px;">👤 Vendedor</button>
+        </div>
+    </div>
+
+    <div id="loginAdmin" class="login-box hidden">
+        <div class="card">
+            <h3 class="text-center">👑 Administrador</h3>
+            <div class="input-group"><label>PIN de acceso</label><input type="password" id="pinInput" placeholder="Ingresa el PIN"></div>
+            <button class="btn btn-primary" onclick="verificarPIN()">Entrar</button>
+            <button class="btn btn-outline" onclick="volverLogin()" style="margin-top:8px;">Volver</button>
+        </div>
+    </div>
+
+    <div id="loginVendedor" class="login-box hidden">
+        <div class="card">
+            <h3 class="text-center">👤 Vendedor</h3>
+            <div class="input-group"><label>Tu nombre</label><input type="text" id="vendedorNombre" placeholder="Ej: Carlos"></div>
+            <button class="btn btn-success" onclick="entrarVendedor()">Entrar</button>
+            <button class="btn btn-outline" onclick="volverLogin()" style="margin-top:8px;">Volver</button>
+        </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="adminSection" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>🎉 Administrador</h1>
+            <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarPestanaAdmin('inventario')">📦 Inventario</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('historial')">📋 Historial</button>
+        </div>
+
+        <div id="adminInventario" class="seccion active">
+            <div class="card">
+                <div class="resumen-grid">
+                    <div class="resumen-item"><small>💸 Costo Total</small><strong id="totalCosto">$0.00</strong></div>
+                    <div class="resumen-item"><small>💰 Valor Venta</small><strong id="totalVenta">$0.00</strong></div>
+                    <div class="resumen-item"><small>📈 Ganancia</small><strong id="gananciaPotencial" class="ganancia">$0.00</strong></div>
+                </div>
+            </div>
+            <div class="flex">
+                <button class="btn btn-success" onclick="abrirModalAgregar()">➕ Nuevo</button>
+                <button class="btn btn-outline" onclick="exportarDatos()">📤 Respaldar</button>
+                <button class="btn btn-outline" onclick="importarDatos()">📥 Restaurar</button>
+                <button class="btn btn-primary" onclick="enviarRespaldoCorreo()">📧 Enviar por correo</button>
+                <button class="btn btn-warning" onclick="enviarReporteWhatsApp()">📲 Reporte WhatsApp</button>
+            </div>
+            <div class="card">
+                <div style="overflow-x:auto;">
+                    <table class="tabla-productos" id="tablaAdmin">
+                        <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
+                        <tbody id="cuerpoAdmin"><tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">Sin productos</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminHistorial" class="seccion">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">📋 Registro de Ventas</h3>
+                    <button class="btn btn-danger btn-sm" onclick="borrarHistorialAdmin()">🗑️ Limpiar</button>
+                </div>
+                <div id="listaHistorialAdmin" style="max-height:500px; overflow-y:auto; margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin ventas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENDEDOR -->
+    <div id="vendedorSection" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>👤 Vendedor: <span id="nombreVendedorDisplay"></span></h1>
+            <button class="btn btn-danger btn-sm" onclick="cerrarSesion()">🚪 Salir</button>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarPestanaVendedor('vender')">🛒 Vender</button>
+            <button class="tab-btn" onclick="cambiarPestanaVendedor('misventas')">📋 Mis Ventas</button>
+        </div>
+
+        <div id="vendedorVender" class="seccion active">
+            <div class="card">
+                <h3>🛒 Productos disponibles</h3>
+                <div id="listaProductosVenta"></div>
+            </div>
+        </div>
+
+        <div id="vendedorMisVentas" class="seccion">
+            <div class="card">
+                <h3>📋 Mis ventas</h3>
+                <div id="listaVentasVendedor" style="max-height:500px; overflow-y:auto; margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Aún no has vendido nada</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal" id="modalAdmin">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="modalAdminTitulo">Título</h3><button class="close-btn" onclick="cerrarModalAdmin()">&times;</button></div>
+        <div id="modalAdminBody"></div>
+    </div>
+</div>
+
+<div class="modal" id="modalVendedor">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="modalVendedorTitulo">Vender</h3><button class="close-btn" onclick="cerrarModalVendedor()">&times;</button></div>
+        <div id="modalVendedorBody"></div>
+    </div>
+</div>
+
+<script>
+    // ---------- CONSTANTES ----------
+    const PIN_ADMIN = '1234';
+    const CORREO_ADMIN = 'monzonabdel@gmail.com';
+
+    // ---------- DATOS ----------
+    function getProductos() {
+        try { return JSON.parse(localStorage.getItem('inventario_productos')) || []; } catch { return []; }
+    }
+    function guardarProductos(p) { localStorage.setItem('inventario_productos', JSON.stringify(p)); }
+    function getHistorial() {
+        try { return JSON.parse(localStorage.getItem('historial_ventas')) || []; } catch { return []; }
+    }
+    function guardarHistorial(h) { localStorage.setItem('historial_ventas', JSON.stringify(h)); }
+
+    // ---------- SESIÓN ----------
+    let rolActual = null;
+    let vendedorNombre = '';
+
+    // ---------- LOGIN ----------
+    function mostrarLoginAdmin() {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('loginAdmin').classList.remove('hidden');
+        document.getElementById('loginVendedor').classList.add('hidden');
+    }
+    function mostrarLoginVendedor() {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('loginVendedor').classList.remove('hidden');
+        document.getElementById('loginAdmin').classList.add('hidden');
+    }
+    function volverLogin() {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('loginVendedor').classList.add('hidden');
+    }
+
+    function verificarPIN() {
+        const pin = document.getElementById('pinInput').value;
+        if (pin === PIN_ADMIN) { entrarAdmin(); } else { mostrarMensaje('❌ PIN incorrecto'); document.getElementById('pinInput').value = ''; }
+    }
+
+    function entrarAdmin() {
+        rolActual = 'admin';
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('vendedorSection').classList.add('hidden');
+        renderizarAdmin();
+        cambiarPestanaAdmin('inventario');
+        mostrarMensaje('👑 Bienvenido Administrador');
+    }
+
+    function entrarVendedor() {
+        const nombre = document.getElementById('vendedorNombre').value.trim();
+        if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
+        vendedorNombre = nombre;
+        rolActual = 'vendedor';
+        document.getElementById('loginVendedor').classList.add('hidden');
+        document.getElementById('vendedorSection').classList.remove('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+        document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
+        renderizarVendedor();
+        cambiarPestanaVendedor('vender');
+        mostrarMensaje('👤 Bienvenido ' + vendedorNombre);
+    }
+
+    function cerrarSesion() {
+        if (confirm('¿Cerrar sesión?')) {
+            rolActual = null;
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('vendedorSection').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('pinInput').value = '';
+            document.getElementById('vendedorNombre').value = '';
+            mostrarMensaje('🔒 Sesión cerrada');
+        }
+    }
+
+    // ---------- ADMIN ----------
+    function renderizarAdmin() {
+        const productos = getProductos();
+        const tbody = document.getElementById('cuerpoAdmin');
+        if (productos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">Sin productos</td></tr>`;
+        } else {
+            tbody.innerHTML = productos.map((p, index) => `
+                <tr>
+                    <td><strong>${p.nombre}</strong><br><small style="color:#666;">${p.categoria || 'General'}</small></td>
+                    <td>$${p.precioCompra.toFixed(2)}</td>
+                    <td>$${p.precioVenta.toFixed(2)}</td>
+                    <td><span class="badge-stock ${p.stock <= 3 ? 'badge-bajo' : ''}">${p.stock}</span></td>
+                    <td>
+                        <div class="acciones-botones">
+                            <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${index})">📦</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${index})">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        let costoTotal = 0, ventaTotal = 0;
+        productos.forEach(p => { costoTotal += p.precioCompra * p.stock; ventaTotal += p.precioVenta * p.stock; });
+        document.getElementById('totalCosto').textContent = '$' + costoTotal.toFixed(2);
+        document.getElementById('totalVenta').textContent = '$' + ventaTotal.toFixed(2);
+        document.getElementById('gananciaPotencial').textContent = '$' + (ventaTotal - costoTotal).toFixed(2);
+        mostrarHistorialAdmin();
+    }
+
+    function abrirModalAgregar() {
+        document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="f_nombre" type="text" placeholder="Ej: Perfume Rosa"></div>
+            <div class="input-group"><label>Categoría</label><input id="f_categoria" type="text" placeholder="Perfume, Decoración, etc."></div>
+            <div class="input-group"><label>Precio de Compra *</label><input id="f_compra" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="input-group"><label>Precio de Venta *</label><input id="f_venta" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="input-group"><label>Stock inicial</label><input id="f_stock" type="number" value="0"></div>
+            <button class="btn btn-success" onclick="guardarProductoAdmin()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarProductoAdmin() {
+        const nombre = document.getElementById('f_nombre').value.trim();
+        const categoria = document.getElementById('f_categoria').value.trim();
+        const precioCompra = parseFloat(document.getElementById('f_compra').value);
+        const precioVenta = parseFloat(document.getElementById('f_venta').value);
+        const stock = parseInt(document.getElementById('f_stock').value) || 0;
+        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios (*)');
+        if (precioCompra < 0 || precioVenta < 0) return mostrarMensaje('⚠️ Los precios no pueden ser negativos');
+        const productos = getProductos();
+        productos.push({ nombre, categoria, precioCompra, precioVenta, stock });
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje('✅ Producto agregado');
+    }
+
+    let indiceAdmin = null;
+    function abrirModalMovimientoAdmin(index) {
+        indiceAdmin = index;
+        const productos = getProductos();
+        const p = productos[index];
+        document.getElementById('modalAdminTitulo').textContent = `📦 ${p.nombre}`;
+        document.getElementById('modalAdminBody').innerHTML = `
+            <p><strong>Stock actual:</strong> ${p.stock}</p>
+            <div class="input-group"><label>Cantidad</label><input id="f_cantidad_admin" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Vendedor (para salida)</label><input id="f_vendedor_admin" type="text" placeholder="Nombre del vendedor"></div>
+            <button class="btn btn-success" onclick="movimientoAdmin('entrada')">📥 Entrada (Comprar)</button>
+            <button class="btn btn-danger" onclick="movimientoAdmin('salida')" style="margin-top:8px;">📤 Salida (Vender)</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function movimientoAdmin(tipo) {
+        const cantidad = parseInt(document.getElementById('f_cantidad_admin').value);
+        const vendedor = document.getElementById('f_vendedor_admin').value.trim() || 'Admin';
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad válida');
+        const productos = getProductos();
+        const p = productos[indiceAdmin];
+        if (tipo === 'salida') {
+            if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+            p.stock -= cantidad;
+            const historial = getHistorial();
+            const ahora = new Date();
+            const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+            const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+            historial.push({
+                producto: p.nombre,
+                categoria: p.categoria || 'General',
+                cantidad: cantidad,
+                precioVenta: p.precioVenta,
+                precioCompra: p.precioCompra,
+                gananciaUnidad: p.precioVenta - p.precioCompra,
+                gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
+                vendedor: vendedor,
+                fecha: fecha,
+                hora: hora,
+                timestamp: ahora.getTime()
+            });
+            guardarHistorial(historial);
+        } else {
+            p.stock += cantidad;
+        }
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Stock: ${p.stock}`);
+    }
+
+    let eliminarAdminIndex = null;
+    function confirmarEliminarAdmin(index) {
+        if (confirm(`¿Eliminar "${getProductos()[index].nombre}" definitivamente?`)) {
+            let productos = getProductos();
+            productos.splice(index, 1);
+            guardarProductos(productos);
+            renderizarAdmin();
+            mostrarMensaje('🗑️ Producto eliminado');
+        }
+    }
+
+    function mostrarHistorialAdmin() {
+        const historial = getHistorial();
+        const contenedor = document.getElementById('listaHistorialAdmin');
+        if (historial.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin ventas</p>'; return; }
+        contenedor.innerHTML = historial.slice().reverse().map(v => `
+            <div class="historial-item">
+                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+                <div class="detalles">
+                    <span>Cant: ${v.cantidad}</span>
+                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                    <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
+                    <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function borrarHistorialAdmin() {
+        if (confirm('¿Eliminar todo el historial?')) { guardarHistorial([]); mostrarHistorialAdmin(); mostrarMensaje('🗑️ Historial limpiado'); }
+    }
+
+    function cambiarPestanaAdmin(seccion) {
+        document.querySelectorAll('#adminSection .seccion').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
+        if (seccion === 'inventario') {
+            document.getElementById('adminInventario').classList.add('active');
+            document.querySelector('#adminSection .tab-btn:first-child').classList.add('active');
+        } else {
+            document.getElementById('adminHistorial').classList.add('active');
+            document.querySelector('#adminSection .tab-btn:last-child').classList.add('active');
+            mostrarHistorialAdmin();
+        }
+    }
+
+    // ---------- VENDEDOR ----------
+    function renderizarVendedor() {
+        const productos = getProductos();
+        const contenedor = document.getElementById('listaProductosVenta');
+        if (productos.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">No hay productos disponibles</p>';
+            return;
+        }
+        contenedor.innerHTML = productos.map((p, index) => `
+            <div class="producto-venta">
+                <div>
+                    <span class="nombre">${p.nombre}</span>
+                    <span class="stock">Stock: ${p.stock}</span>
+                    <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+                </div>
+                <button class="btn-venta" onclick="abrirModalVenta(${index})">Vender</button>
+            </div>
+        `).join('');
+        mostrarMisVentas();
+    }
+
+    let indiceVenta = null;
+    function abrirModalVenta(index) {
+        indiceVenta = index;
+        const p = getProductos()[index];
+        document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
+        document.getElementById('modalVendedorBody').innerHTML = `
+            <p><strong>Stock disponible:</strong> ${p.stock}</p>
+            <p><strong>Precio de venta:</strong> $${p.precioVenta.toFixed(2)}</p>
+            <div class="input-group"><label>Cantidad a vender</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
+            <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
+            <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
+        `;
+        document.getElementById('modalVendedor').classList.add('active');
+    }
+
+    function confirmarVenta() {
+        const cantidad = parseInt(document.getElementById('f_cantidad_venta').value);
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad válida');
+        const productos = getProductos();
+        const p = productos[indiceVenta];
+        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+        p.stock -= cantidad;
+        guardarProductos(productos);
+
+        const historial = getHistorial();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
+        const venta = {
+            producto: p.nombre,
+            categoria: p.categoria || 'General',
+            cantidad: cantidad,
+            precioVenta: p.precioVenta,
+            precioCompra: p.precioCompra,
+            gananciaUnidad: p.precioVenta - p.precioCompra,
+            gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
+            vendedor: vendedorNombre,
+            fecha: fecha,
+            hora: hora,
+            timestamp: ahora.getTime()
+        };
+        historial.push(venta);
+        guardarHistorial(historial);
+        cerrarModalVendedor();
+        renderizarVendedor();
+        mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre} registrada`);
+
+        // Preguntar si enviar por WhatsApp
+        if (confirm('📲 ¿Enviar comprobante por WhatsApp?')) {
+            enviarVentaWhatsApp(venta);
+        }
+    }
+
+    function enviarVentaWhatsApp(venta) {
+        const mensaje = `✅ *VENTA REGISTRADA*%0A` +
+                        `Producto: ${venta.producto}%0A` +
+                        `Cantidad: ${venta.cantidad}%0A` +
+                        `Precio unitario: $${venta.precioVenta.toFixed(2)}%0A` +
+                        `Total: $${(venta.precioVenta * venta.cantidad).toFixed(2)}%0A` +
+                        `Vendedor: ${venta.vendedor}%0A` +
+                        `Fecha: ${venta.fecha} ${venta.hora}`;
+        const url = `https://wa.me/?text=${mensaje}`;
+        window.open(url, '_blank');
+    }
+
+    function mostrarMisVentas() {
+        const historial = getHistorial();
+        const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
+        const contenedor = document.getElementById('listaVentasVendedor');
+        if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:#999;">Aún no has vendido nada</p>'; return; }
+        contenedor.innerHTML = misVentas.slice().reverse().map(v => `
+            <div class="historial-item" style="border-left-color: #1a4c8a;">
+                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+                <div class="detalles">
+                    <span>Cant: ${v.cantidad}</span>
+                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                    <span>Total: $${(v.precioVenta * v.cantidad).toFixed(2)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function cambiarPestanaVendedor(seccion) {
+        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+        if (seccion === 'vender') {
+            document.getElementById('vendedorVender').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
+        } else {
+            document.getElementById('vendedorMisVentas').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
+            mostrarMisVentas();
+        }
+    }
+
+    // ---------- ADMIN: RESPALDO Y ENVÍOS ----------
+    function exportarDatos() {
+        const data = JSON.stringify({ productos: getProductos(), historial: getHistorial() });
+        const blob = new Blob([data], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'respaldo_completo.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        mostrarMensaje('📤 Respaldo descargado');
+    }
+
+    function importarDatos() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.productos && Array.isArray(data.productos)) {
+                        guardarProductos(data.productos);
+                        if (data.historial && Array.isArray(data.historial)) guardarHistorial(data.historial);
+                        renderizarAdmin();
+                        mostrarMensaje('📥 Datos restaurados');
+                    } else { mostrarMensaje('⚠️ Archivo inválido'); }
+                } catch { mostrarMensaje('⚠️ Error al leer archivo'); }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    function enviarRespaldoCorreo() {
+        const data = JSON.stringify({ productos: getProductos(), historial: getHistorial() });
+        const encoded = encodeURIComponent(data);
+        const asunto = encodeURIComponent('Respaldo inventario');
+        const cuerpo = encodeURIComponent(`Aquí tienes el respaldo de tu inventario:\n\n${data}`);
+        const link = `mailto:${CORREO_ADMIN}?subject=${asunto}&body=${cuerpo}`;
+        window.open(link, '_blank');
+        mostrarMensaje('📧 Abriendo correo...');
+    }
+
+    function enviarReporteWhatsApp() {
+        const historial = getHistorial();
+        const productos = getProductos();
+        let mensaje = '📊 *REPORTE DE INVENTARIO*%0A%0A';
+        mensaje += '📦 *PRODUCTOS:*%0A';
+        productos.forEach(p => {
+            mensaje += `• ${p.nombre} | Stock: ${p.stock} | P.Venta: $${p.precioVenta.toFixed(2)}%0A`;
+        });
+        mensaje += '%0A📋 *ÚLTIMAS VENTAS:*%0A';
+        const ultimas = historial.slice(-5).reverse();
+        if (ultimas.length === 0) mensaje += 'Sin ventas recientes%0A';
+        else ultimas.forEach(v => {
+            mensaje += `• ${v.producto} x${v.cantidad} | $${(v.precioVenta * v.cantidad).toFixed(2)} | ${v.vendedor} | ${v.fecha}%0A`;
+        });
+        const url = `https://wa.me/?text=${mensaje}`;
+        window.open(url, '_blank');
+        mostrarMensaje('📲 Abriendo WhatsApp...');
+    }
+
+    // ---------- UTILIDADES ----------
+    function cerrarModalAdmin() { document.getElementById('modalAdmin').classList.remove('active'); }
+    function cerrarModalVendedor() { document.getElementById('modalVendedor').classList.remove('active'); }
+
+    function mostrarMensaje(texto) {
+        const existente = document.querySelector('.mensaje-flotante');
+        if (existente) existente.remove();
+        const div = document.createElement('div');
+        div.className = 'mensaje-flotante';
+        div.textContent = texto;
+        document.body.appendChild(div);
+        setTimeout(() => { if (div.parentNode) div.remove(); }, 2500);
+    }
+
+    // ---------- INICIO ----------
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginAdmin').classList.add('hidden');
+    document.getElementById('loginVendedor').classList.add('hidden');
+    document.getElementById('adminSection').classList.add('hidden');
+    document.getElementById('vendedorSection').classList.add('hidden');
+</script>
+</body>
+</html>
