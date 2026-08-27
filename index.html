@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Mi Inventario Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; padding: 16px; min-height: 100vh; background: linear-gradient(145deg, #1a0e2e, #2d1b4e); background-attachment: fixed; }
@@ -53,7 +52,6 @@
         .seccion.active { display: block; }
         .alerta-stock { background: rgba(255,215,0,0.08); border-left: 6px solid #ffd740; padding: 14px 18px; border-radius: 18px; margin-bottom: 16px; }
         .alerta-stock strong { color: #ffd740; }
-        .alerta-stock span { color: #ffd740; }
         .resumen-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
         .resumen-item { background: rgba(255,215,0,0.06); border-radius: 18px; padding: 16px 8px; text-align: center; }
         .resumen-item small { display: block; font-size: 0.75rem; color: rgba(255,215,0,0.6); font-weight: 700; }
@@ -125,7 +123,6 @@
             <button class="tab-btn" onclick="cambiarPestanaAdmin('clientes')">👥 Clientes</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('proveedores')">🏢 Proveedores</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('categorias')">🏷️ Categorías</button>
-            <button class="tab-btn" onclick="cambiarPestanaAdmin('sucursales')">🏪 Sucursales</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('gastos')">💸 Gastos</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('mermas')">📉 Mermas</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('historial')">📋 Historial</button>
@@ -147,7 +144,6 @@
             </div>
             <div class="flex">
                 <button class="btn btn-success" onclick="abrirModalAgregar()">➕ Nuevo</button>
-                <button class="btn btn-outline" onclick="respaldarManual()">📤 Respaldo manual</button>
                 <button class="btn btn-outline" onclick="exportarDatos()">📤 Respaldar</button>
                 <button class="btn btn-outline" onclick="importarDatos()">📥 Restaurar</button>
             </div>
@@ -155,8 +151,8 @@
                 <input type="text" id="buscarAdmin" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarAdmin()">
                 <div style="overflow-x:auto;">
                     <table class="tabla-productos" id="tablaAdmin">
-                        <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Sucursal</th><th>Acciones</th></tr></thead>
-                        <tbody id="cuerpoAdmin"><tr><td colspan="6" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">Sin productos</td></tr></tbody>
+                        <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
+                        <tbody id="cuerpoAdmin"><tr><td colspan="5" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">Sin productos</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -188,15 +184,6 @@
                 <button class="btn btn-success" onclick="abrirModalCategoria()">➕ Agregar categoría</button>
                 <button class="btn btn-primary" onclick="abrirModalSubcategoria()" style="margin-top:8px;">➕ Agregar subcategoría</button>
                 <div id="listaCategorias" style="margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin categorías</p></div>
-            </div>
-        </div>
-
-        <!-- SUCURSALES -->
-        <div id="adminSucursales" class="seccion">
-            <div class="card">
-                <h3>🏪 Sucursales</h3>
-                <button class="btn btn-success" onclick="abrirModalSucursal()">➕ Agregar sucursal</button>
-                <div id="listaSucursales" style="margin-top:12px;"><p class="text-center" style="color:rgba(255,255,255,0.3);">Sin sucursales</p></div>
             </div>
         </div>
 
@@ -258,14 +245,6 @@
                 <div style="margin-top:16px;">
                     <h4 style="color:#ffd740;">🏆 Top 5 productos</h4>
                     <div id="topProductos"></div>
-                </div>
-                <div style="margin-top:16px;">
-                    <h4 style="color:#ffd740;">📈 Evolución de ventas</h4>
-                    <canvas id="graficoVentas" width="400" height="200"></canvas>
-                </div>
-                <div style="margin-top:16px;">
-                    <h4 style="color:#ffd740;">🏪 Ventas por sucursal</h4>
-                    <canvas id="graficoSucursales" width="400" height="200"></canvas>
                 </div>
             </div>
         </div>
@@ -343,24 +322,22 @@
     </div>
 </div>
 
-<!-- FIN PARTE 1 -->
-    <script>
+<script>
     // ============================================================
-    // PARTE 2: SCRIPT COMPLETO (DATOS, LOGIN, ADMIN INVENTARIO, MOVIMIENTOS, CLIENTES, PROVEEDORES, CATEGORÍAS, SUCURSALES)
+    // SCRIPT COMPLETO - TODAS LAS FUNCIONES
     // ============================================================
 
-    console.log('✅ App iniciada');
+    console.log('✅ App iniciada correctamente');
 
+    // ---------- VARIABLES GLOBALES ----------
     let PIN_ADMIN = '1234';
     let UMBRAL_STOCK = 5;
     let vendedorNombre = '';
     let indiceEditar = null;
     let indiceAdmin = null;
     let indiceVenta = null;
-    let chartInstance = null;
-    let chartSucursalInstance = null;
 
-    // ---------- DATOS ----------
+    // ---------- DATOS (localStorage) ----------
     function getProductos() {
         try { return JSON.parse(localStorage.getItem('inventario_productos')) || []; } catch { return []; }
     }
@@ -385,11 +362,6 @@
         try { return JSON.parse(localStorage.getItem('categorias')) || []; } catch { return []; }
     }
     function guardarCategorias(c) { localStorage.setItem('categorias', JSON.stringify(c)); }
-
-    function getSucursales() {
-        try { return JSON.parse(localStorage.getItem('sucursales')) || ['Principal']; } catch { return ['Principal']; }
-    }
-    function guardarSucursales(s) { localStorage.setItem('sucursales', JSON.stringify(s)); }
 
     function getGastos() {
         try { return JSON.parse(localStorage.getItem('gastos')) || []; } catch { return []; }
@@ -444,25 +416,25 @@
 
     function entrarAdmin() {
         console.log('✅ Entrando como administrador');
+        // Ocultar todo el login
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
         document.getElementById('loginVendedor').classList.add('hidden');
-        
+        // Mostrar sección de administrador
         const adminSection = document.getElementById('adminSection');
         adminSection.classList.remove('hidden');
         adminSection.style.display = 'block';
-        
+        // Ocultar vendedor por si acaso
         document.getElementById('vendedorSection').classList.add('hidden');
         document.getElementById('vendedorSection').style.display = 'none';
-        
+        // Cargar datos
         cargarConfiguracion();
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
         setTimeout(cargarPersonalizacion, 500);
-        setTimeout(verificarRespaldoSemanal, 2000);
         mostrarMensaje('👑 Bienvenido Administrador');
     }
 
@@ -471,21 +443,21 @@
         if (!nombre) { mostrarMensaje('⚠️ Escribe tu nombre'); return; }
         vendedorNombre = nombre;
         console.log('✅ Entrando como vendedor: ' + vendedorNombre);
-
+        // Ocultar todo el login
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loginVendedor').style.display = 'none';
         document.getElementById('loginAdmin').style.display = 'none';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('loginVendedor').classList.add('hidden');
         document.getElementById('loginAdmin').classList.add('hidden');
-
+        // Mostrar sección de vendedor
         const vendedorSection = document.getElementById('vendedorSection');
         vendedorSection.classList.remove('hidden');
         vendedorSection.style.display = 'block';
-
+        // Ocultar admin por si acaso
         document.getElementById('adminSection').classList.add('hidden');
         document.getElementById('adminSection').style.display = 'none';
-
+        // Actualizar nombre y renderizar
         document.getElementById('nombreVendedorDisplay').textContent = vendedorNombre;
         renderizarVendedor();
         cambiarPestanaVendedor('vender');
@@ -517,7 +489,7 @@
         );
         const tbody = document.getElementById('cuerpoAdmin');
         if (filtrados.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:rgba(255,255,255,0.3);">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
         } else {
             tbody.innerHTML = filtrados.map((p, index) => {
                 const realIndex = productos.indexOf(p);
@@ -528,7 +500,6 @@
                         <td>$${p.precioCompra.toFixed(2)}</td>
                         <td>$${p.precioVenta.toFixed(2)}</td>
                         <td><span class="badge-stock ${bajoStock ? 'badge-bajo' : ''}">${p.stock} ${bajoStock ? '⚠️' : ''}</span></td>
-                        <td>${p.sucursal || 'Principal'}</td>
                         <td>
                             <div style="display:flex; gap:4px; flex-wrap:wrap;">
                                 <button class="btn btn-primary btn-sm" onclick="abrirModalEditarProducto(${realIndex})">✏️</button>
@@ -560,16 +531,13 @@
     // ---------- ADMIN: AGREGAR PRODUCTO ----------
     function abrirModalAgregar() {
         const categorias = getCategorias();
-        const sucursales = getSucursales();
         let catOptions = '<option value="">Seleccionar</option>';
         categorias.forEach(c => catOptions += `<option value="${c.nombre}">${c.nombre}</option>`);
-        let sucOptions = sucursales.map(s => `<option value="${s}">${s}</option>`).join('');
         document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
         document.getElementById('modalAdminBody').innerHTML = `
             <div class="input-group"><label>Nombre *</label><input id="f_nombre" type="text" placeholder="Nombre"></div>
             <div class="input-group"><label>Categoría</label><select id="f_categoria" onchange="actualizarSubcategorias()">${catOptions}</select></div>
             <div class="input-group"><label>Subcategoría</label><select id="f_subcategoria"><option value="">Ninguna</option></select></div>
-            <div class="input-group"><label>Sucursal</label><select id="f_sucursal">${sucOptions}</select></div>
             <div class="input-group"><label>P.Compra</label><input id="f_compra" type="number" step="0.01" placeholder="0.00"></div>
             <div class="input-group"><label>P.Venta</label><input id="f_venta" type="number" step="0.01" placeholder="0.00"></div>
             <div class="input-group"><label>Stock inicial</label><input id="f_stock" type="number" value="0"></div>
@@ -594,13 +562,12 @@
         const nombre = document.getElementById('f_nombre').value.trim();
         const categoria = document.getElementById('f_categoria').value;
         const subcategoria = document.getElementById('f_subcategoria').value;
-        const sucursal = document.getElementById('f_sucursal').value || 'Principal';
         const precioCompra = parseFloat(document.getElementById('f_compra').value);
         const precioVenta = parseFloat(document.getElementById('f_venta').value);
         const stock = parseInt(document.getElementById('f_stock').value) || 0;
         if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios');
         const productos = getProductos();
-        productos.push({ nombre, categoria, subcategoria, sucursal, precioCompra, precioVenta, stock });
+        productos.push({ nombre, categoria, subcategoria, precioCompra, precioVenta, stock });
         guardarProductos(productos);
         cerrarModalAdmin();
         renderizarAdmin();
@@ -612,19 +579,16 @@
         const productos = getProductos();
         const p = productos[index];
         const categorias = getCategorias();
-        const sucursales = getSucursales();
         let catOptions = '<option value="">Seleccionar</option>';
         categorias.forEach(c => {
             catOptions += `<option value="${c.nombre}" ${c.nombre === p.categoria ? 'selected' : ''}>${c.nombre}</option>`;
         });
-        let sucOptions = sucursales.map(s => `<option value="${s}" ${s === p.sucursal ? 'selected' : ''}>${s}</option>`).join('');
         indiceEditar = index;
         document.getElementById('modalAdminTitulo').textContent = '✏️ Editar producto';
         document.getElementById('modalAdminBody').innerHTML = `
             <div class="input-group"><label>Nombre *</label><input id="e_nombre" type="text" value="${p.nombre}"></div>
             <div class="input-group"><label>Categoría</label><select id="e_categoria" onchange="actualizarSubcategoriasEditar()">${catOptions}</select></div>
             <div class="input-group"><label>Subcategoría</label><select id="e_subcategoria"><option value="">Ninguna</option></select></div>
-            <div class="input-group"><label>Sucursal</label><select id="e_sucursal">${sucOptions}</select></div>
             <div class="input-group"><label>P.Compra</label><input id="e_compra" type="number" step="0.01" value="${p.precioCompra}"></div>
             <div class="input-group"><label>P.Venta</label><input id="e_venta" type="number" step="0.01" value="${p.precioVenta}"></div>
             <div class="input-group"><label>Stock</label><input id="e_stock" type="number" value="${p.stock}"></div>
@@ -655,7 +619,6 @@
         const nombre = document.getElementById('e_nombre').value.trim();
         const categoria = document.getElementById('e_categoria').value;
         const subcategoria = document.getElementById('e_subcategoria').value;
-        const sucursal = document.getElementById('e_sucursal').value || 'Principal';
         const precioCompra = parseFloat(document.getElementById('e_compra').value);
         const precioVenta = parseFloat(document.getElementById('e_venta').value);
         const stock = parseInt(document.getElementById('e_stock').value) || 0;
@@ -663,7 +626,6 @@
         p.nombre = nombre;
         p.categoria = categoria;
         p.subcategoria = subcategoria;
-        p.sucursal = sucursal;
         p.precioCompra = precioCompra;
         p.precioVenta = precioVenta;
         p.stock = stock;
@@ -711,7 +673,6 @@
                 producto: p.nombre,
                 categoria: p.categoria || 'General',
                 subcategoria: p.subcategoria || '',
-                sucursal: p.sucursal || 'Principal',
                 cantidad: cantidad,
                 precioVenta: p.precioVenta,
                 precioCompra: p.precioCompra,
@@ -998,65 +959,6 @@
         mostrarMensaje('✅ Subcategoría agregada');
     }
 
-    // ---------- ADMIN: SUCURSALES ----------
-    function renderizarSucursales() {
-        const sucursales = getSucursales();
-        const contenedor = document.getElementById('listaSucursales');
-        if (sucursales.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin sucursales</p>'; return; }
-        contenedor.innerHTML = sucursales.map((s, i) => `
-            <div style="background:rgba(255,255,255,0.03); border-radius:16px; padding:12px; margin-bottom:8px; border-left:4px solid #ffd740;">
-                <div style="display:flex; justify-content:space-between;">
-                    <strong style="color:rgba(255,255,255,0.9);">${s}</strong>
-                    ${i > 0 ? `<button class="btn btn-danger btn-sm" onclick="eliminarSucursal(${i})">🗑️</button>` : '<span style="color:rgba(255,255,255,0.3);">Principal</span>'}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function abrirModalSucursal() {
-        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar sucursal';
-        document.getElementById('modalAdminBody').innerHTML = `
-            <div class="input-group"><label>Nombre de la sucursal *</label><input id="f_sucursal_nombre" type="text" placeholder="Ej: Sucursal Centro"></div>
-            <button class="btn btn-success" onclick="guardarSucursal()">✅ Guardar</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-    }
-
-    function guardarSucursal() {
-        const nombre = document.getElementById('f_sucursal_nombre').value.trim();
-        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
-        const sucursales = getSucursales();
-        if (sucursales.includes(nombre)) return mostrarMensaje('⚠️ Ya existe');
-        sucursales.push(nombre);
-        guardarSucursales(sucursales);
-        cerrarModalAdmin();
-        renderizarSucursales();
-        mostrarMensaje('✅ Sucursal agregada');
-    }
-
-    function eliminarSucursal(index) {
-        if (confirm('¿Eliminar esta sucursal? Los productos asignados a ella pasarán a "Principal"')) {
-            let sucursales = getSucursales();
-            const nombre = sucursales[index];
-            sucursales.splice(index, 1);
-            guardarSucursales(sucursales);
-            let productos = getProductos();
-            productos.forEach(p => {
-                if (p.sucursal === nombre) p.sucursal = 'Principal';
-            });
-            guardarProductos(productos);
-            renderizarSucursales();
-            renderizarAdmin();
-            mostrarMensaje('🗑️ Sucursal eliminada, productos reasignados a Principal');
-        }
-    }
-
-    // FIN PARTE 2
-
-           // ============================================================
-    // PARTE 3: GASTOS, MERMAS, HISTORIAL, REPORTES, GRÁFICOS, VENDEDOR, TICKET, PERSONALIZACIÓN, RESPALDOS, CONFIG, UTILIDADES, INICIO
-    // ============================================================
-
     // ---------- ADMIN: GASTOS ----------
     function renderizarGastos() {
         const gastos = getGastos();
@@ -1205,7 +1107,6 @@
                         <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
                         <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
                         ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
-                        ${v.sucursal ? `<span style="color:rgba(255,255,255,0.6);">🏪 ${v.sucursal}</span>` : ''}
                         <button class="btn btn-danger btn-sm" onclick="eliminarVenta(${realIndex})">🗑️</button>
                     </div>
                 </div>
@@ -1269,9 +1170,9 @@
         if (ventasFiltradas.length === 0) {
             contenedor.innerHTML = '<p style="color:rgba(255,255,255,0.3);">No hay ventas</p>';
         } else {
-            let html = '<table class="tabla-productos"><thead><tr><th>Producto</th><th>Cant</th><th>Total</th><th>Ganancia</th><th>Fecha</th><th>Vendedor</th><th>Sucursal</th></tr></thead><tbody>';
+            let html = '<table class="tabla-productos"><thead><tr><th>Producto</th><th>Cant</th><th>Total</th><th>Ganancia</th><th>Fecha</th><th>Vendedor</th></tr></thead><tbody>';
             ventasFiltradas.slice().reverse().forEach(v => {
-                html += `<tr><td>${v.producto}</td><td>${v.cantidad}</td><td>$${(v.precioVenta * v.cantidad).toFixed(2)}</td><td style="color:#69f0ae;">+$${v.gananciaTotal.toFixed(2)}</td><td>${v.fecha}</td><td>${v.vendedor}</td><td>${v.sucursal || 'Principal'}</td></tr>`;
+                html += `<tr><td>${v.producto}</td><td>${v.cantidad}</td><td>$${(v.precioVenta * v.cantidad).toFixed(2)}</td><td style="color:#69f0ae;">+$${v.gananciaTotal.toFixed(2)}</td><td>${v.fecha}</td><td>${v.vendedor}</td></tr>`;
             });
             html += '</tbody></table>';
             contenedor.innerHTML = html;
@@ -1285,93 +1186,6 @@
             html += '</tbody></table>';
             topContenedor.innerHTML = html;
         }
-
-        // Gráfico de evolución
-        if (ventasFiltradas.length > 0) {
-            const dias = {};
-            ventasFiltradas.forEach(v => {
-                const fecha = new Date(v.timestamp);
-                const key = fecha.toLocaleDateString('es-CU');
-                dias[key] = (dias[key] || 0) + v.precioVenta * v.cantidad;
-            });
-            const labels = Object.keys(dias).slice(0, 15);
-            const data = labels.map(d => dias[d]);
-            if (labels.length > 1) {
-                dibujarGrafico('graficoVentas', labels, data, 'Ventas por día', 'bar');
-            } else if (top.length > 0) {
-                const labelsTop = top.map(([nombre]) => nombre);
-                const dataTop = top.map(([, cantidad]) => cantidad);
-                dibujarGrafico('graficoVentas', labelsTop, dataTop, 'Top productos', 'bar');
-            } else {
-                if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-            }
-        } else {
-            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-        }
-
-        // Gráfico por sucursal
-        const ventasPorSucursal = {};
-        ventasFiltradas.forEach(v => {
-            const suc = v.sucursal || 'Principal';
-            ventasPorSucursal[suc] = (ventasPorSucursal[suc] || 0) + v.precioVenta * v.cantidad;
-        });
-        const labelsSuc = Object.keys(ventasPorSucursal);
-        const dataSuc = labelsSuc.map(s => ventasPorSucursal[s]);
-        if (labelsSuc.length > 0) {
-            dibujarGrafico('graficoSucursales', labelsSuc, dataSuc, 'Ventas por sucursal', 'bar');
-        } else {
-            if (chartSucursalInstance) { chartSucursalInstance.destroy(); chartSucursalInstance = null; }
-        }
-    }
-
-    // ---------- GRÁFICOS ----------
-    function dibujarGrafico(canvasId, etiquetas, datos, titulo, tipo = 'bar') {
-        const ctx = document.getElementById(canvasId);
-        if (!ctx) return;
-        let instance = canvasId === 'graficoVentas' ? chartInstance : chartSucursalInstance;
-        if (instance) { instance.destroy(); instance = null; }
-        const defaultColors = datos.map(() => 'rgba(255,215,0,0.6)');
-        const borderColors = datos.map(() => 'rgba(255,215,0,1)');
-        const nuevo = new Chart(ctx, {
-            type: tipo,
-            data: {
-                labels: etiquetas,
-                datasets: [{
-                    label: titulo,
-                    data: datos,
-                    backgroundColor: defaultColors,
-                    borderColor: borderColors,
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    barPercentage: 0.6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { labels: { color: 'white', font: { size: 12 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                if (context.parsed.y !== null) {
-                                    label += '$' + context.parsed.y.toFixed(2);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.7)' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.7)', callback: function(value) { return '$' + value.toFixed(0); } } }
-                }
-            }
-        });
-        if (canvasId === 'graficoVentas') chartInstance = nuevo;
-        else chartSucursalInstance = nuevo;
     }
 
     // ---------- PERSONALIZACIÓN ----------
@@ -1451,7 +1265,6 @@
                         <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
                         <span class="stock">Stock: ${p.stock}</span>
                         <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
-                        ${p.sucursal ? `<span style="font-size:0.7rem; color:rgba(255,255,255,0.3);">🏪 ${p.sucursal}</span>` : ''}
                     </div>
                     <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
                 </div>
@@ -1496,7 +1309,6 @@
             producto: p.nombre,
             categoria: p.categoria || 'General',
             subcategoria: p.subcategoria || '',
-            sucursal: p.sucursal || 'Principal',
             cantidad: cantidad,
             precioVenta: p.precioVenta,
             precioCompra: p.precioCompra,
@@ -1533,7 +1345,6 @@
                     <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
                     <span style="color:#69f0ae;">🟢 Ganancia: $${v.gananciaTotal.toFixed(2)}</span>
                     ${v.cliente ? `<span style="color:rgba(255,255,255,0.6);">👥 ${v.cliente}</span>` : ''}
-                    ${v.sucursal ? `<span style="color:rgba(255,255,255,0.6);">🏪 ${v.sucursal}</span>` : ''}
                 </div>
             </div>
         `).join('');
@@ -1553,7 +1364,6 @@
                 <div><strong>Producto:</strong> ${venta.producto}</div>
                 <div><strong>Cantidad:</strong> ${venta.cantidad}</div>
                 <div><strong>Precio unit.:</strong> $${venta.precioVenta.toFixed(2)}</div>
-                ${venta.sucursal ? `<div><strong>Sucursal:</strong> ${venta.sucursal}</div>` : ''}
                 <hr style="border-color:rgba(255,215,0,0.2);">
                 <div style="font-size:1.2rem; color:#ffd740; font-weight:700;">TOTAL: $${total.toFixed(2)}</div>
                 <hr style="border-color:rgba(255,215,0,0.2);">
@@ -1614,71 +1424,6 @@
     }
 
     // ---------- RESPALDOS ----------
-    function getUltimoRespaldo() {
-        try { return localStorage.getItem('ultimo_respaldo_automatico') || null; } catch { return null; }
-    }
-    function guardarUltimoRespaldo(fecha) {
-        localStorage.setItem('ultimo_respaldo_automatico', fecha);
-    }
-    function haPasadoUnaSemana() {
-        const ultimo = getUltimoRespaldo();
-        if (!ultimo) return true;
-        const dias = Math.floor((Date.now() - parseInt(ultimo)) / (1000 * 60 * 60 * 24));
-        return dias >= 7;
-    }
-    function generarRespaldo() {
-        const data = JSON.stringify({
-            productos: getProductos(),
-            historial: getHistorial(),
-            clientes: getClientes(),
-            proveedores: getProveedores(),
-            categorias: getCategorias(),
-            sucursales: getSucursales(),
-            gastos: getGastos(),
-            mermas: getMermas(),
-            config: getConfig(),
-            personalizacion: getPersonalizacion(),
-            fecha_respaldo: new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
-        });
-        return data;
-    }
-    function descargarRespaldoAutomatico() {
-        const data = generarRespaldo();
-        const blob = new Blob([data], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const fecha = new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g, '-');
-        a.download = `respaldo_semanal_${fecha}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        guardarUltimoRespaldo(Date.now().toString());
-        mostrarMensaje('📤 Respaldo semanal guardado automáticamente');
-    }
-    function verificarRespaldoSemanal() {
-        if (haPasadoUnaSemana()) {
-            if (confirm('📅 Ha pasado más de una semana sin respaldar. ¿Quieres hacer un respaldo automático ahora?')) {
-                descargarRespaldoAutomatico();
-            } else {
-                guardarUltimoRespaldo((Date.now() - 6 * 24 * 60 * 60 * 1000).toString());
-                mostrarMensaje('⏳ Recuerda respaldar pronto. El sistema te lo recordará mañana.');
-            }
-        }
-    }
-    function respaldarManual() {
-        const data = generarRespaldo();
-        const blob = new Blob([data], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const fecha = new Date().toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g, '-');
-        a.download = `respaldo_manual_${fecha}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        guardarUltimoRespaldo(Date.now().toString());
-        mostrarMensaje('📤 Respaldo manual guardado');
-    }
-
     function exportarDatos() {
         const data = JSON.stringify({
             productos: getProductos(),
@@ -1686,7 +1431,6 @@
             clientes: getClientes(),
             proveedores: getProveedores(),
             categorias: getCategorias(),
-            sucursales: getSucursales(),
             gastos: getGastos(),
             mermas: getMermas(),
             config: getConfig(),
@@ -1699,7 +1443,7 @@
         a.download = 'respaldo_completo.json';
         a.click();
         URL.revokeObjectURL(url);
-        mostrarMensaje('📤 Respaldo completo descargado');
+        mostrarMensaje('📤 Respaldo descargado');
     }
 
     function importarDatos() {
@@ -1718,7 +1462,6 @@
                     if (data.clientes) guardarClientes(data.clientes);
                     if (data.proveedores) guardarProveedores(data.proveedores);
                     if (data.categorias) guardarCategorias(data.categorias);
-                    if (data.sucursales) guardarSucursales(data.sucursales);
                     if (data.gastos) guardarGastos(data.gastos);
                     if (data.mermas) guardarMermas(data.mermas);
                     if (data.config) guardarConfig(data.config);
@@ -1773,7 +1516,6 @@
             'clientes': 'adminClientes',
             'proveedores': 'adminProveedores',
             'categorias': 'adminCategorias',
-            'sucursales': 'adminSucursales',
             'gastos': 'adminGastos',
             'mermas': 'adminMermas',
             'historial': 'adminHistorial',
@@ -1787,13 +1529,12 @@
         }
         document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
         const btns = document.querySelectorAll('#adminSection .tab-btn');
-        const idx = ['inventario','clientes','proveedores','categorias','sucursales','gastos','mermas','historial','reportes','config'].indexOf(seccion);
+        const idx = ['inventario','clientes','proveedores','categorias','gastos','mermas','historial','reportes','config'].indexOf(seccion);
         if (idx !== -1) btns[idx].classList.add('active');
 
         if (seccion === 'clientes') renderizarClientes();
         if (seccion === 'proveedores') renderizarProveedores();
         if (seccion === 'categorias') renderizarCategorias();
-        if (seccion === 'sucursales') renderizarSucursales();
         if (seccion === 'gastos') renderizarGastos();
         if (seccion === 'mermas') renderizarMermas();
         if (seccion === 'historial') mostrarHistorialAdmin();
@@ -1853,4 +1594,4 @@
     });
 </script>
 </body>
-</html> 
+</html>
