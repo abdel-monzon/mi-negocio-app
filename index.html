@@ -545,17 +545,27 @@
     
         
     function cerrarSesion() {
-        if (confirm('¿Cerrar sesión?')) {
-            document.getElementById('adminSection').classList.add('hidden');
-            document.getElementById('adminSection').style.display = 'none';
-            document.getElementById('vendedorSection').classList.add('hidden');
-            document.getElementById('vendedorSection').style.display = 'none';
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('pinInput').value = '';
-            document.getElementById('vendedorNombre').value = '';
-            mostrarMensaje('🔒 Sesión cerrada');
-        }
+    if (confirm('¿Cerrar sesión?')) {
+        // Ocultar todo
+        document.getElementById('adminSection').classList.add('hidden');
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('vendedorSection').classList.add('hidden');
+        document.getElementById('vendedorSection').style.display = 'none';
+        
+        // Mostrar login
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('loginAdmin').style.display = 'none';
+        document.getElementById('loginVendedor').classList.add('hidden');
+        document.getElementById('loginVendedor').style.display = 'none';
+        
+        // Limpiar campos
+        document.getElementById('pinInput').value = '';
+        document.getElementById('vendedorNombre').value = '';
+        
+        mostrarMensaje('🔒 Sesión cerrada');
+    }
     }
 
     // ---------- ADMIN: INVENTARIO ----------
