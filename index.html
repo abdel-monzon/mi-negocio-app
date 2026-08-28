@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Mi Inventario - Admin / Vendedor</title>
+    <title>Mi Inventario Pro</title>
     <style>
         * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
         body { background: #f4f6f9; margin: 0; padding: 16px; }
-        .container { max-width: 600px; margin: 0 auto; }
+        .container { max-width: 650px; margin: 0 auto; }
         .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
         .text-center { text-align: center; }
         .btn { display: inline-block; padding: 10px 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-align: center; width: 100%; margin-top: 6px; }
@@ -38,7 +38,7 @@
         .mensaje-flotante { background: #323232; color: white; padding: 12px 20px; border-radius: 30px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .historial-item { background: #f8f9fa; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #2e7d32; }
         .historial-item .row { display: flex; justify-content: space-between; font-size: 0.9rem; }
-        .historial-item .detalles { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 4px; color: #555; flex-wrap: wrap; }
+        .historial-item .detalles { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 4px; color: #555; flex-wrap: wrap; align-items: center; }
         .vendedor-tag { background: #e0e7ff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #1a4c8a; }
         .resumen-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .resumen-item { background: #eef2f7; border-radius: 12px; padding: 10px; text-align: center; }
@@ -50,15 +50,21 @@
         .producto-venta .stock { font-size: 0.8rem; color: #666; }
         .producto-venta .precio { font-size: 0.8rem; color: #1a4c8a; font-weight: bold; }
         .btn-venta { background: #1a4c8a; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 12px; font-weight: bold; background: #e9ecf2; color: #333; cursor: pointer; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; border-radius: 16px; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 12px; font-weight: bold; background: #e9ecf2; color: #333; cursor: pointer; font-size: 0.8rem; min-width: 60px; }
         .tab-btn.active { background: #1a4c8a; color: white; }
         .hidden { display: none; }
         .login-box { max-width: 350px; margin: 40px auto; }
         .login-box h2 { text-align: center; margin-bottom: 20px; }
-        .whatsapp-btn { background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
         .flex { display: flex; gap: 8px; flex-wrap: wrap; }
         .flex .btn { flex: 1; }
+        .alerta-stock { background: #fff3cd; border-left: 4px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 12px; }
+        .alerta-stock strong { color: #e65100; }
+        .cliente-item, .proveedor-item, .categoria-item { background: #f8f9fa; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #1a4c8a; }
+        .cliente-item .detalles, .proveedor-item .detalles { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .gasto-item { background: #fff5f5; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #c62828; }
+        .gasto-item .detalles { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .merma-item { background: #fff8e1; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #f57f17; }
     </style>
 </head>
 <body>
@@ -67,7 +73,7 @@
     <!-- LOGIN -->
     <div id="loginScreen" class="login-box">
         <div class="card">
-            <h2 class="text-center">🔐 Mi Inventario</h2>
+            <h2 class="text-center">🔐 Mi Inventario Pro</h2>
             <p class="text-center">Selecciona tu rol:</p>
             <button class="btn btn-primary" onclick="mostrarLoginAdmin()">👑 Administrador</button>
             <button class="btn btn-success" onclick="mostrarLoginVendedor()" style="margin-top:8px;">👤 Vendedor</button>
@@ -100,9 +106,15 @@
         </div>
         <div class="tabs">
             <button class="tab-btn active" onclick="cambiarPestanaAdmin('inventario')">📦 Inventario</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('categorias')">🏷️ Categorías</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('clientes')">👥 Clientes</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('proveedores')">🏢 Proveedores</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('gastos')">💸 Gastos</button>
+            <button class="tab-btn" onclick="cambiarPestanaAdmin('mermas')">📉 Mermas</button>
             <button class="tab-btn" onclick="cambiarPestanaAdmin('historial')">📋 Historial</button>
         </div>
 
+        <!-- INVENTARIO -->
         <div id="adminInventario" class="seccion active">
             <div class="card">
                 <div class="resumen-grid">
@@ -110,6 +122,9 @@
                     <div class="resumen-item"><small>💰 Valor Venta</small><strong id="totalVenta">$0.00</strong></div>
                     <div class="resumen-item"><small>📈 Ganancia</small><strong id="gananciaPotencial" class="ganancia">$0.00</strong></div>
                 </div>
+            </div>
+            <div id="alertasStock" class="alerta-stock hidden">
+                <strong>⚠️ Productos con stock bajo:</strong> <span id="listaAlertas"></span>
             </div>
             <div class="flex">
                 <button class="btn btn-success" onclick="abrirModalAgregar()">➕ Nuevo</button>
@@ -119,6 +134,7 @@
                 <button class="btn btn-warning" onclick="enviarReporteWhatsApp()">📲 Reporte WhatsApp</button>
             </div>
             <div class="card">
+                <input type="text" id="buscarAdmin" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarAdmin()">
                 <div style="overflow-x:auto;">
                     <table class="tabla-productos" id="tablaAdmin">
                         <thead><tr><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Acciones</th></tr></thead>
@@ -128,6 +144,72 @@
             </div>
         </div>
 
+        <!-- CATEGORÍAS -->
+        <div id="adminCategorias" class="seccion">
+            <div class="card">
+                <h3>🏷️ Categorías y Subcategorías</h3>
+                <div class="flex">
+                    <button class="btn btn-success" onclick="abrirModalCategoria()">➕ Agregar categoría</button>
+                    <button class="btn btn-primary" onclick="abrirModalSubcategoria()">➕ Agregar subcategoría</button>
+                </div>
+                <div id="listaCategorias" style="margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin categorías</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="adminClientes" class="seccion">
+            <div class="card">
+                <h3>👥 Clientes</h3>
+                <button class="btn btn-success" onclick="abrirModalCliente()">➕ Agregar cliente</button>
+                <input type="text" id="buscarCliente" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarClientes()" style="margin-top:12px;">
+                <div id="listaClientes" style="margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin clientes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROVEEDORES -->
+        <div id="adminProveedores" class="seccion">
+            <div class="card">
+                <h3>🏢 Proveedores</h3>
+                <button class="btn btn-success" onclick="abrirModalProveedor()">➕ Agregar proveedor</button>
+                <div id="listaProveedores" style="margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin proveedores</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- GASTOS -->
+        <div id="adminGastos" class="seccion">
+            <div class="card">
+                <h3>💸 Gastos Operativos</h3>
+                <button class="btn btn-success" onclick="abrirModalGasto()">➕ Registrar gasto</button>
+                <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:12px;">
+                    <strong>Total gastos: </strong><span id="totalGastos">$0.00</span>
+                </div>
+                <div id="listaGastos" style="margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin gastos registrados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MERMAS -->
+        <div id="adminMermas" class="seccion">
+            <div class="card">
+                <h3>📉 Mermas (Pérdidas)</h3>
+                <button class="btn btn-danger" onclick="abrirModalMerma()">➕ Registrar merma</button>
+                <div style="margin-top:12px; background:#fff3e0; padding:10px; border-radius:12px;">
+                    <strong>Total mermas: </strong><span id="totalMermas">$0.00</span>
+                </div>
+                <div id="listaMermas" style="margin-top:12px;">
+                    <p class="text-center" style="color:#999;">Sin mermas registradas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL -->
         <div id="adminHistorial" class="seccion">
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -155,6 +237,7 @@
         <div id="vendedorVender" class="seccion active">
             <div class="card">
                 <h3>🛒 Productos disponibles</h3>
+                <input type="text" id="buscarVendedor" class="search-box" placeholder="🔍 Buscar..." oninput="renderizarVendedor()">
                 <div id="listaProductosVenta"></div>
             </div>
         </div>
@@ -185,20 +268,62 @@
     </div>
 </div>
 
-<script>
+<div class="modal" id="modalTicket">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="modalTicketTitulo">🧾 Ticket</h3><button class="close-btn" onclick="cerrarModalTicket()">&times;</button></div>
+        <div id="modalTicketBody"></div>
+    </div>
+</div>
+
+<!-- FIN PARTE 1 -->
+
+    <script>
+    // ============================================================
+    // PARTE 2: CONFIGURACIÓN, DATOS, LOGIN, INVENTARIO, MOVIMIENTOS
+    // ============================================================
+
+    console.log('✅ App iniciada correctamente');
+
     // ---------- CONSTANTES ----------
     const PIN_ADMIN = '1234';
     const CORREO_ADMIN = 'monzonabdel@gmail.com';
+    let UMBRAL_STOCK = 5;
 
     // ---------- DATOS ----------
     function getProductos() {
         try { return JSON.parse(localStorage.getItem('inventario_productos')) || []; } catch { return []; }
     }
     function guardarProductos(p) { localStorage.setItem('inventario_productos', JSON.stringify(p)); }
+
     function getHistorial() {
         try { return JSON.parse(localStorage.getItem('historial_ventas')) || []; } catch { return []; }
     }
     function guardarHistorial(h) { localStorage.setItem('historial_ventas', JSON.stringify(h)); }
+
+    function getCategorias() {
+        try { return JSON.parse(localStorage.getItem('categorias')) || []; } catch { return []; }
+    }
+    function guardarCategorias(c) { localStorage.setItem('categorias', JSON.stringify(c)); }
+
+    function getClientes() {
+        try { return JSON.parse(localStorage.getItem('clientes')) || []; } catch { return []; }
+    }
+    function guardarClientes(c) { localStorage.setItem('clientes', JSON.stringify(c)); }
+
+    function getProveedores() {
+        try { return JSON.parse(localStorage.getItem('proveedores')) || []; } catch { return []; }
+    }
+    function guardarProveedores(p) { localStorage.setItem('proveedores', JSON.stringify(p)); }
+
+    function getGastos() {
+        try { return JSON.parse(localStorage.getItem('gastos')) || []; } catch { return []; }
+    }
+    function guardarGastos(g) { localStorage.setItem('gastos', JSON.stringify(g)); }
+
+    function getMermas() {
+        try { return JSON.parse(localStorage.getItem('mermas')) || []; } catch { return []; }
+    }
+    function guardarMermas(m) { localStorage.setItem('mermas', JSON.stringify(m)); }
 
     // ---------- SESIÓN ----------
     let rolActual = null;
@@ -262,74 +387,190 @@
         }
     }
 
-    // ---------- ADMIN ----------
+    // ---------- ADMIN: INVENTARIO ----------
     function renderizarAdmin() {
         const productos = getProductos();
+        const busqueda = document.getElementById('buscarAdmin').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
+            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
+        );
         const tbody = document.getElementById('cuerpoAdmin');
-        if (productos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">Sin productos</td></tr>`;
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px; color:#999;">${productos.length === 0 ? 'Sin productos' : 'No hay coincidencias'}</td></tr>`;
         } else {
-            tbody.innerHTML = productos.map((p, index) => `
-                <tr>
-                    <td><strong>${p.nombre}</strong><br><small style="color:#666;">${p.categoria || 'General'}</small></td>
-                    <td>$${p.precioCompra.toFixed(2)}</td>
-                    <td>$${p.precioVenta.toFixed(2)}</td>
-                    <td><span class="badge-stock ${p.stock <= 3 ? 'badge-bajo' : ''}">${p.stock}</span></td>
-                    <td>
-                        <div class="acciones-botones">
-                            <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${index})">📦</button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${index})">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = filtrados.map((p, index) => {
+                const realIndex = productos.indexOf(p);
+                const bajoStock = p.stock <= UMBRAL_STOCK;
+                return `
+                    <tr>
+                        <td><strong>${p.nombre}</strong><br><small style="color:#666;">${p.categoria || 'General'}${p.subcategoria ? ' → ' + p.subcategoria : ''}</small></td>
+                        <td>$${p.precioCompra.toFixed(2)}</td>
+                        <td>$${p.precioVenta.toFixed(2)}</td>
+                        <td><span class="badge-stock ${bajoStock ? 'badge-bajo' : ''}">${p.stock} ${bajoStock ? '⚠️' : ''}</span></td>
+                        <td>
+                            <div class="acciones-botones">
+                                <button class="btn btn-primary btn-sm" onclick="abrirModalEditarProducto(${realIndex})">✏️</button>
+                                <button class="btn btn-warning btn-sm" onclick="abrirModalMovimientoAdmin(${realIndex})">📦</button>
+                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarAdmin(${realIndex})">🗑️</button>
+                                <button class="btn btn-danger btn-sm" onclick="abrirModalMermaRapida(${realIndex})" style="background:#c62828;">📉</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
         let costoTotal = 0, ventaTotal = 0;
         productos.forEach(p => { costoTotal += p.precioCompra * p.stock; ventaTotal += p.precioVenta * p.stock; });
         document.getElementById('totalCosto').textContent = '$' + costoTotal.toFixed(2);
         document.getElementById('totalVenta').textContent = '$' + ventaTotal.toFixed(2);
         document.getElementById('gananciaPotencial').textContent = '$' + (ventaTotal - costoTotal).toFixed(2);
+
+        // Alertas de stock bajo
+        const productosBajos = productos.filter(p => p.stock <= UMBRAL_STOCK);
+        const alertaDiv = document.getElementById('alertasStock');
+        if (productosBajos.length > 0) {
+            alertaDiv.classList.remove('hidden');
+            document.getElementById('listaAlertas').textContent = productosBajos.map(p => `${p.nombre} (${p.stock})`).join(', ');
+        } else {
+            alertaDiv.classList.add('hidden');
+        }
         mostrarHistorialAdmin();
     }
 
+    // ---------- ADMIN: AGREGAR PRODUCTO (con categorías y subcategorías) ----------
     function abrirModalAgregar() {
+        const categorias = getCategorias();
+        let catOptions = '<option value="">Seleccionar categoría</option>';
+        categorias.forEach(c => {
+            catOptions += `<option value="${c.nombre}">${c.nombre}</option>`;
+        });
+
         document.getElementById('modalAdminTitulo').textContent = '➕ Nuevo Producto';
         document.getElementById('modalAdminBody').innerHTML = `
             <div class="input-group"><label>Nombre *</label><input id="f_nombre" type="text" placeholder="Ej: Perfume Rosa"></div>
-            <div class="input-group"><label>Categoría</label><input id="f_categoria" type="text" placeholder="Perfume, Decoración, etc."></div>
+            <div class="input-group"><label>Categoría</label><select id="f_categoria" onchange="actualizarSubcategorias()">${catOptions}</select></div>
+            <div class="input-group"><label>Subcategoría</label><select id="f_subcategoria"><option value="">Ninguna</option></select></div>
             <div class="input-group"><label>Precio de Compra *</label><input id="f_compra" type="number" step="0.01" placeholder="0.00"></div>
             <div class="input-group"><label>Precio de Venta *</label><input id="f_venta" type="number" step="0.01" placeholder="0.00"></div>
             <div class="input-group"><label>Stock inicial</label><input id="f_stock" type="number" value="0"></div>
             <button class="btn btn-success" onclick="guardarProductoAdmin()">✅ Guardar</button>
         `;
         document.getElementById('modalAdmin').classList.add('active');
+        actualizarSubcategorias();
+    }
+
+    function actualizarSubcategorias() {
+        const categoriaSel = document.getElementById('f_categoria');
+        const subcatSel = document.getElementById('f_subcategoria');
+        const categorias = getCategorias();
+        const cat = categorias.find(c => c.nombre === categoriaSel.value);
+        subcatSel.innerHTML = '<option value="">Ninguna</option>';
+        if (cat && cat.subcategorias) {
+            cat.subcategorias.forEach(sub => {
+                subcatSel.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+        }
     }
 
     function guardarProductoAdmin() {
         const nombre = document.getElementById('f_nombre').value.trim();
-        const categoria = document.getElementById('f_categoria').value.trim();
+        const categoria = document.getElementById('f_categoria').value;
+        const subcategoria = document.getElementById('f_subcategoria').value;
         const precioCompra = parseFloat(document.getElementById('f_compra').value);
         const precioVenta = parseFloat(document.getElementById('f_venta').value);
         const stock = parseInt(document.getElementById('f_stock').value) || 0;
         if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios (*)');
         if (precioCompra < 0 || precioVenta < 0) return mostrarMensaje('⚠️ Los precios no pueden ser negativos');
         const productos = getProductos();
-        productos.push({ nombre, categoria, precioCompra, precioVenta, stock });
+        productos.push({ nombre, categoria, subcategoria, precioCompra, precioVenta, stock });
         guardarProductos(productos);
         cerrarModalAdmin();
         renderizarAdmin();
         mostrarMensaje('✅ Producto agregado');
     }
 
+    // ---------- ADMIN: EDITAR PRODUCTO ----------
+    function abrirModalEditarProducto(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const categorias = getCategorias();
+        let catOptions = '<option value="">Seleccionar categoría</option>';
+        categorias.forEach(c => {
+            catOptions += `<option value="${c.nombre}" ${c.nombre === p.categoria ? 'selected' : ''}>${c.nombre}</option>`;
+        });
+
+        document.getElementById('modalAdminTitulo').textContent = '✏️ Editar producto';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="e_nombre" type="text" value="${p.nombre}"></div>
+            <div class="input-group"><label>Categoría</label><select id="e_categoria" onchange="actualizarSubcategoriasEditar()">${catOptions}</select></div>
+            <div class="input-group"><label>Subcategoría</label><select id="e_subcategoria"><option value="">Ninguna</option></select></div>
+            <div class="input-group"><label>Precio de Compra *</label><input id="e_compra" type="number" step="0.01" value="${p.precioCompra}"></div>
+            <div class="input-group"><label>Precio de Venta *</label><input id="e_venta" type="number" step="0.01" value="${p.precioVenta}"></div>
+            <div class="input-group"><label>Stock</label><input id="e_stock" type="number" value="${p.stock}"></div>
+            <button class="btn btn-success" onclick="guardarEdicionProducto(${index})">✅ Guardar cambios</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+        setTimeout(actualizarSubcategoriasEditar, 100);
+    }
+
+    let indiceEditar = null;
+    function actualizarSubcategoriasEditar() {
+        const categoriaSel = document.getElementById('e_categoria');
+        const subcatSel = document.getElementById('e_subcategoria');
+        const categorias = getCategorias();
+        const cat = categorias.find(c => c.nombre === categoriaSel.value);
+        const productos = getProductos();
+        const p = productos[indiceEditar];
+        subcatSel.innerHTML = '<option value="">Ninguna</option>';
+        if (cat && cat.subcategorias) {
+            cat.subcategorias.forEach(sub => {
+                subcatSel.innerHTML += `<option value="${sub}" ${sub === p.subcategoria ? 'selected' : ''}>${sub}</option>`;
+            });
+        }
+    }
+
+    function guardarEdicionProducto(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const nombre = document.getElementById('e_nombre').value.trim();
+        const categoria = document.getElementById('e_categoria').value;
+        const subcategoria = document.getElementById('e_subcategoria').value;
+        const precioCompra = parseFloat(document.getElementById('e_compra').value);
+        const precioVenta = parseFloat(document.getElementById('e_venta').value);
+        const stock = parseInt(document.getElementById('e_stock').value) || 0;
+        if (!nombre || isNaN(precioCompra) || isNaN(precioVenta)) return mostrarMensaje('⚠️ Completa todos los campos obligatorios (*)');
+        if (precioCompra < 0 || precioVenta < 0) return mostrarMensaje('⚠️ Los precios no pueden ser negativos');
+        p.nombre = nombre;
+        p.categoria = categoria;
+        p.subcategoria = subcategoria;
+        p.precioCompra = precioCompra;
+        p.precioVenta = precioVenta;
+        p.stock = stock;
+        guardarProductos(productos);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        mostrarMensaje('✅ Producto actualizado');
+    }
+
+    // ---------- ADMIN: MOVIMIENTO ----------
     let indiceAdmin = null;
     function abrirModalMovimientoAdmin(index) {
         indiceAdmin = index;
         const productos = getProductos();
         const p = productos[index];
+        const clientes = getClientes();
+        let clienteOptions = '<option value="">Sin cliente</option>';
+        clientes.forEach(c => {
+            clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`;
+        });
+
         document.getElementById('modalAdminTitulo').textContent = `📦 ${p.nombre}`;
         document.getElementById('modalAdminBody').innerHTML = `
             <p><strong>Stock actual:</strong> ${p.stock}</p>
             <div class="input-group"><label>Cantidad</label><input id="f_cantidad_admin" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Cliente</label><select id="f_cliente_admin">${clienteOptions}</select></div>
             <div class="input-group"><label>Vendedor (para salida)</label><input id="f_vendedor_admin" type="text" placeholder="Nombre del vendedor"></div>
             <button class="btn btn-success" onclick="movimientoAdmin('entrada')">📥 Entrada (Comprar)</button>
             <button class="btn btn-danger" onclick="movimientoAdmin('salida')" style="margin-top:8px;">📤 Salida (Vender)</button>
@@ -340,6 +581,8 @@
     function movimientoAdmin(tipo) {
         const cantidad = parseInt(document.getElementById('f_cantidad_admin').value);
         const vendedor = document.getElementById('f_vendedor_admin').value.trim() || 'Admin';
+        const clienteData = document.getElementById('f_cliente_admin').value;
+        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
         if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad válida');
         const productos = getProductos();
         const p = productos[indiceAdmin];
@@ -350,20 +593,25 @@
             const ahora = new Date();
             const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
             const hora = ahora.toLocaleTimeString('es-CU', { hour:'2-digit', minute:'2-digit' });
-            historial.push({
+            const venta = {
                 producto: p.nombre,
                 categoria: p.categoria || 'General',
+                subcategoria: p.subcategoria || '',
                 cantidad: cantidad,
                 precioVenta: p.precioVenta,
                 precioCompra: p.precioCompra,
                 gananciaUnidad: p.precioVenta - p.precioCompra,
                 gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
                 vendedor: vendedor,
+                cliente: cliente ? cliente.nombre : null,
+                clienteTelefono: cliente ? cliente.telefono : null,
                 fecha: fecha,
                 hora: hora,
                 timestamp: ahora.getTime()
-            });
+            };
+            historial.push(venta);
             guardarHistorial(historial);
+            mostrarTicket(venta);
         } else {
             p.stock += cantidad;
         }
@@ -373,7 +621,7 @@
         mostrarMensaje(`✅ ${tipo === 'entrada' ? 'Entrada' : 'Venta'} registrada. Stock: ${p.stock}`);
     }
 
-    let eliminarAdminIndex = null;
+    // ---------- ADMIN: ELIMINAR PRODUCTO ----------
     function confirmarEliminarAdmin(index) {
         if (confirm(`¿Eliminar "${getProductos()[index].nombre}" definitivamente?`)) {
             let productos = getProductos();
@@ -384,58 +632,515 @@
         }
     }
 
+    // ---------- ADMIN: MERMA RÁPIDA ----------
+    function abrirModalMermaRapida(index) {
+        const p = getProductos()[index];
+        document.getElementById('modalAdminTitulo').textContent = '📉 Merma rápida';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <p><strong>${p.nombre}</strong> - Stock: ${p.stock}</p>
+            <div class="input-group"><label>Cantidad</label><input id="f_merma_rapida_cant" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Motivo</label><input id="f_merma_rapida_motivo" type="text" placeholder="Motivo"></div>
+            <button class="btn btn-danger" onclick="guardarMermaRapida(${index})">✅ Registrar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarMermaRapida(index) {
+        const productos = getProductos();
+        const p = productos[index];
+        const cantidad = parseInt(document.getElementById('f_merma_rapida_cant').value);
+        const motivo = document.getElementById('f_merma_rapida_motivo').value.trim() || 'Sin especificar';
+        if (!cantidad || cantidad <= 0) return mostrarMensaje('⚠️ Ingresa cantidad válida');
+        if (p.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente');
+        const costo = p.precioCompra * cantidad;
+        p.stock -= cantidad;
+        guardarProductos(productos);
+        const mermas = getMermas();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        mermas.push({ producto: p.nombre, cantidad, motivo, costo, fecha, timestamp: ahora.getTime() });
+        guardarMermas(mermas);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        renderizarMermas();
+        mostrarMensaje('📉 Merma registrada');
+    }
+
+    // ---------- ADMIN: HISTORIAL ----------
     function mostrarHistorialAdmin() {
         const historial = getHistorial();
         const contenedor = document.getElementById('listaHistorialAdmin');
         if (historial.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin ventas</p>'; return; }
-        contenedor.innerHTML = historial.slice().reverse().map(v => `
-            <div class="historial-item">
-                <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
-                <div class="detalles">
-                    <span>Cant: ${v.cantidad}</span>
-                    <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
-                    <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
-                    <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
+        contenedor.innerHTML = historial.slice().reverse().map((v, index) => {
+            const realIndex = historial.length - 1 - index;
+            return `
+                <div class="historial-item">
+                    <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
+                    <div class="detalles">
+                        <span>Cant: ${v.cantidad}</span>
+                        <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
+                        <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
+                        <span class="vendedor-tag">👤 ${v.vendedor || 'Anónimo'}</span>
+                        ${v.cliente ? `<span style="color:rgba(0,0,0,0.6);">👥 ${v.cliente}</span>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="eliminarVenta(${realIndex})">🗑️</button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    function eliminarVenta(index) {
+        if (confirm('¿Eliminar esta venta del historial?')) {
+            let historial = getHistorial();
+            historial.splice(index, 1);
+            guardarHistorial(historial);
+            mostrarHistorialAdmin();
+            mostrarMensaje('🗑️ Venta eliminada');
+        }
     }
 
     function borrarHistorialAdmin() {
         if (confirm('¿Eliminar todo el historial?')) { guardarHistorial([]); mostrarHistorialAdmin(); mostrarMensaje('🗑️ Historial limpiado'); }
     }
 
+    // ---------- ADMIN: CAMBIAR PESTAÑAS ----------
     function cambiarPestanaAdmin(seccion) {
         document.querySelectorAll('#adminSection .seccion').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('#adminSection .tab-btn').forEach(el => el.classList.remove('active'));
-        if (seccion === 'inventario') {
-            document.getElementById('adminInventario').classList.add('active');
-            document.querySelector('#adminSection .tab-btn:first-child').classList.add('active');
-        } else {
-            document.getElementById('adminHistorial').classList.add('active');
-            document.querySelector('#adminSection .tab-btn:last-child').classList.add('active');
-            mostrarHistorialAdmin();
+        const map = {
+            'inventario': 'adminInventario',
+            'categorias': 'adminCategorias',
+            'clientes': 'adminClientes',
+            'proveedores': 'adminProveedores',
+            'gastos': 'adminGastos',
+            'mermas': 'adminMermas',
+            'historial': 'adminHistorial'
+        };
+        document.getElementById(map[seccion]).classList.add('active');
+        const btns = document.querySelectorAll('#adminSection .tab-btn');
+        const idx = ['inventario','categorias','clientes','proveedores','gastos','mermas','historial'].indexOf(seccion);
+        if (idx !== -1) btns[idx].classList.add('active');
+
+        if (seccion === 'categorias') renderizarCategorias();
+        if (seccion === 'clientes') renderizarClientes();
+        if (seccion === 'proveedores') renderizarProveedores();
+        if (seccion === 'gastos') renderizarGastos();
+        if (seccion === 'mermas') renderizarMermas();
+        if (seccion === 'historial') mostrarHistorialAdmin();
+    }
+
+    // FIN PARTE 2
+
+        <script>
+    // ============================================================
+    // PARTE 3: CATEGORÍAS, CLIENTES, PROVEEDORES, GASTOS, MERMAS
+    // ============================================================
+
+    // ---------- ADMIN: CATEGORÍAS ----------
+    function renderizarCategorias() {
+        const categorias = getCategorias();
+        const contenedor = document.getElementById('listaCategorias');
+        if (categorias.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin categorías</p>';
+            return;
+        }
+        contenedor.innerHTML = categorias.map((cat, i) => `
+            <div class="categoria-item">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${cat.nombre}</strong>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarCategoria(${i})">🗑️</button>
+                </div>
+                <div class="detalles">${cat.subcategorias && cat.subcategorias.length > 0 ? 'Subcategorías: ' + cat.subcategorias.join(', ') : 'Sin subcategorías'}</div>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalCategoria() {
+        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar categoría';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre de categoría *</label><input id="f_cat_nombre" type="text" placeholder="Ej: Perfumes"></div>
+            <button class="btn btn-success" onclick="guardarCategoria()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarCategoria() {
+        const nombre = document.getElementById('f_cat_nombre').value.trim();
+        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
+        const categorias = getCategorias();
+        if (categorias.find(c => c.nombre === nombre)) return mostrarMensaje('⚠️ Esta categoría ya existe');
+        categorias.push({ nombre, subcategorias: [] });
+        guardarCategorias(categorias);
+        cerrarModalAdmin();
+        renderizarCategorias();
+        mostrarMensaje('✅ Categoría agregada');
+    }
+
+    function eliminarCategoria(index) {
+        if (confirm('¿Eliminar esta categoría y todas sus subcategorías?')) {
+            let categorias = getCategorias();
+            categorias.splice(index, 1);
+            guardarCategorias(categorias);
+            renderizarCategorias();
+            mostrarMensaje('🗑️ Categoría eliminada');
         }
     }
+
+    function abrirModalSubcategoria() {
+        const categorias = getCategorias();
+        let options = '<option value="">Seleccionar categoría</option>';
+        categorias.forEach(c => {
+            options += `<option value="${c.nombre}">${c.nombre}</option>`;
+        });
+        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar subcategoría';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Categoría *</label><select id="f_sub_cat">${options}</select></div>
+            <div class="input-group"><label>Nombre de subcategoría *</label><input id="f_sub_nombre" type="text" placeholder="Ej: Rosa"></div>
+            <button class="btn btn-success" onclick="guardarSubcategoria()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarSubcategoria() {
+        const catNombre = document.getElementById('f_sub_cat').value;
+        const subNombre = document.getElementById('f_sub_nombre').value.trim();
+        if (!catNombre || !subNombre) return mostrarMensaje('⚠️ Completa todos los campos');
+        let categorias = getCategorias();
+        const cat = categorias.find(c => c.nombre === catNombre);
+        if (!cat) return mostrarMensaje('⚠️ Categoría no encontrada');
+        if (cat.subcategorias.includes(subNombre)) return mostrarMensaje('⚠️ Esta subcategoría ya existe');
+        cat.subcategorias.push(subNombre);
+        guardarCategorias(categorias);
+        cerrarModalAdmin();
+        renderizarCategorias();
+        mostrarMensaje('✅ Subcategoría agregada');
+    }
+
+    // ---------- ADMIN: CLIENTES ----------
+    function renderizarClientes() {
+        const clientes = getClientes();
+        const busqueda = document.getElementById('buscarCliente').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? clientes : clientes.filter(c => 
+            c.nombre.toLowerCase().includes(busqueda) || 
+            (c.telefono && c.telefono.includes(busqueda))
+        );
+        const contenedor = document.getElementById('listaClientes');
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<p class="text-center" style="color:#999;">${clientes.length === 0 ? 'Sin clientes' : 'No hay coincidencias'}</p>`;
+            return;
+        }
+        contenedor.innerHTML = filtrados.map((c, i) => `
+            <div class="cliente-item">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${c.nombre}</strong>
+                    <div>
+                        <button class="btn btn-primary btn-sm" onclick="editarCliente(${i})">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${i})">🗑️</button>
+                    </div>
+                </div>
+                <div class="detalles">${c.telefono ? '📞 ' + c.telefono : ''} ${c.email ? '✉️ ' + c.email : ''} ${c.direccion ? '📍 ' + c.direccion : ''}</div>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalCliente() {
+        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar cliente';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="f_cli_nombre" type="text" placeholder="Nombre"></div>
+            <div class="input-group"><label>Teléfono</label><input id="f_cli_telefono" type="text" placeholder="Teléfono"></div>
+            <div class="input-group"><label>Email</label><input id="f_cli_email" type="email" placeholder="Email"></div>
+            <div class="input-group"><label>Dirección</label><input id="f_cli_direccion" type="text" placeholder="Dirección"></div>
+            <button class="btn btn-success" onclick="guardarCliente()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarCliente() {
+        const nombre = document.getElementById('f_cli_nombre').value.trim();
+        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
+        const clientes = getClientes();
+        clientes.push({
+            nombre,
+            telefono: document.getElementById('f_cli_telefono').value.trim(),
+            email: document.getElementById('f_cli_email').value.trim(),
+            direccion: document.getElementById('f_cli_direccion').value.trim()
+        });
+        guardarClientes(clientes);
+        cerrarModalAdmin();
+        renderizarClientes();
+        mostrarMensaje('✅ Cliente agregado');
+    }
+
+    function editarCliente(index) {
+        const clientes = getClientes();
+        const c = clientes[index];
+        document.getElementById('modalAdminTitulo').textContent = '✏️ Editar cliente';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="e_cli_nombre" type="text" value="${c.nombre}"></div>
+            <div class="input-group"><label>Teléfono</label><input id="e_cli_telefono" type="text" value="${c.telefono || ''}"></div>
+            <div class="input-group"><label>Email</label><input id="e_cli_email" type="email" value="${c.email || ''}"></div>
+            <div class="input-group"><label>Dirección</label><input id="e_cli_direccion" type="text" value="${c.direccion || ''}"></div>
+            <button class="btn btn-success" onclick="guardarEdicionCliente(${index})">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarEdicionCliente(index) {
+        const clientes = getClientes();
+        const c = clientes[index];
+        c.nombre = document.getElementById('e_cli_nombre').value.trim();
+        c.telefono = document.getElementById('e_cli_telefono').value.trim();
+        c.email = document.getElementById('e_cli_email').value.trim();
+        c.direccion = document.getElementById('e_cli_direccion').value.trim();
+        if (!c.nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
+        guardarClientes(clientes);
+        cerrarModalAdmin();
+        renderizarClientes();
+        mostrarMensaje('✅ Cliente actualizado');
+    }
+
+    function eliminarCliente(index) {
+        if (confirm('¿Eliminar este cliente?')) {
+            let clientes = getClientes();
+            clientes.splice(index, 1);
+            guardarClientes(clientes);
+            renderizarClientes();
+            mostrarMensaje('🗑️ Cliente eliminado');
+        }
+    }
+
+    // ---------- ADMIN: PROVEEDORES ----------
+    function renderizarProveedores() {
+        const proveedores = getProveedores();
+        const contenedor = document.getElementById('listaProveedores');
+        if (proveedores.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin proveedores</p>';
+            return;
+        }
+        contenedor.innerHTML = proveedores.map((p, i) => `
+            <div class="proveedor-item">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${p.nombre}</strong>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarProveedor(${i})">🗑️</button>
+                </div>
+                <div class="detalles">${p.telefono ? '📞 ' + p.telefono : ''} ${p.email ? '✉️ ' + p.email : ''} ${p.productos ? '📦 ' + p.productos : ''}</div>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalProveedor() {
+        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar proveedor';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre *</label><input id="f_prov_nombre" type="text" placeholder="Nombre"></div>
+            <div class="input-group"><label>Teléfono</label><input id="f_prov_telefono" type="text" placeholder="Teléfono"></div>
+            <div class="input-group"><label>Email</label><input id="f_prov_email" type="email" placeholder="Email"></div>
+            <div class="input-group"><label>Productos que suministra</label><input id="f_prov_productos" type="text" placeholder="Ej: Perfumes, Decoración"></div>
+            <button class="btn btn-success" onclick="guardarProveedor()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarProveedor() {
+        const nombre = document.getElementById('f_prov_nombre').value.trim();
+        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
+        const proveedores = getProveedores();
+        proveedores.push({
+            nombre,
+            telefono: document.getElementById('f_prov_telefono').value.trim(),
+            email: document.getElementById('f_prov_email').value.trim(),
+            productos: document.getElementById('f_prov_productos').value.trim()
+        });
+        guardarProveedores(proveedores);
+        cerrarModalAdmin();
+        renderizarProveedores();
+        mostrarMensaje('✅ Proveedor agregado');
+    }
+
+    function eliminarProveedor(index) {
+        if (confirm('¿Eliminar este proveedor?')) {
+            let proveedores = getProveedores();
+            proveedores.splice(index, 1);
+            guardarProveedores(proveedores);
+            renderizarProveedores();
+            mostrarMensaje('🗑️ Proveedor eliminado');
+        }
+    }
+
+    // ---------- ADMIN: GASTOS ----------
+    function renderizarGastos() {
+        const gastos = getGastos();
+        const contenedor = document.getElementById('listaGastos');
+        if (gastos.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin gastos</p>';
+        } else {
+            contenedor.innerHTML = gastos.slice().reverse().map((g, i) => `
+                <div class="gasto-item">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${g.concepto}</strong>
+                        <span>$${g.monto.toFixed(2)}</span>
+                    </div>
+                    <div class="detalles">${g.categoria || 'General'} | ${g.fecha} <button class="btn btn-danger btn-sm" onclick="eliminarGasto(${i})" style="float:right;">🗑️</button></div>
+                </div>
+            `).join('');
+        }
+        let total = gastos.reduce((acc, g) => acc + g.monto, 0);
+        document.getElementById('totalGastos').textContent = '$' + total.toFixed(2);
+    }
+
+    function abrirModalGasto() {
+        document.getElementById('modalAdminTitulo').textContent = '💸 Registrar gasto';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Concepto *</label><input id="f_gasto_concepto" type="text" placeholder="Ej: Compra de luz"></div>
+            <div class="input-group"><label>Monto *</label><input id="f_gasto_monto" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="input-group"><label>Categoría</label><input id="f_gasto_categoria" type="text" placeholder="Servicios, Alquiler, etc."></div>
+            <button class="btn btn-success" onclick="guardarGasto()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarGasto() {
+        const concepto = document.getElementById('f_gasto_concepto').value.trim();
+        const monto = parseFloat(document.getElementById('f_gasto_monto').value);
+        const categoria = document.getElementById('f_gasto_categoria').value.trim() || 'General';
+        if (!concepto || isNaN(monto) || monto <= 0) return mostrarMensaje('⚠️ Completa todos los campos correctamente');
+        const gastos = getGastos();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        gastos.push({ concepto, monto, categoria, fecha, timestamp: ahora.getTime() });
+        guardarGastos(gastos);
+        cerrarModalAdmin();
+        renderizarGastos();
+        mostrarMensaje('✅ Gasto registrado');
+    }
+
+    function eliminarGasto(index) {
+        if (confirm('¿Eliminar este gasto?')) {
+            let gastos = getGastos();
+            gastos.splice(index, 1);
+            guardarGastos(gastos);
+            renderizarGastos();
+            mostrarMensaje('🗑️ Gasto eliminado');
+        }
+    }
+
+    // ---------- ADMIN: MERMAS ----------
+    function renderizarMermas() {
+        const mermas = getMermas();
+        const contenedor = document.getElementById('listaMermas');
+        if (mermas.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Sin mermas</p>';
+        } else {
+            contenedor.innerHTML = mermas.slice().reverse().map((m, i) => `
+                <div class="merma-item">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${m.producto}</strong>
+                        <span>$${m.costo.toFixed(2)}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:#666;">Cant: ${m.cantidad} | Motivo: ${m.motivo} | ${m.fecha} <button class="btn btn-danger btn-sm" onclick="eliminarMerma(${i})" style="float:right;">🗑️</button></div>
+                </div>
+            `).join('');
+        }
+        let total = mermas.reduce((acc, m) => acc + m.costo, 0);
+        document.getElementById('totalMermas').textContent = '$' + total.toFixed(2);
+    }
+
+    function abrirModalMerma() {
+        const productos = getProductos();
+        let options = '<option value="">Seleccionar producto</option>';
+        productos.forEach(p => {
+            options += `<option value="${p.nombre}" data-costo="${p.precioCompra}" data-stock="${p.stock}">${p.nombre} (Stock: ${p.stock})</option>`;
+        });
+        document.getElementById('modalAdminTitulo').textContent = '📉 Registrar merma';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Producto *</label><select id="f_merma_producto" onchange="actualizarCostoMerma()">${options}</select></div>
+            <div class="input-group"><label>Cantidad *</label><input id="f_merma_cantidad" type="number" min="1" placeholder="Cantidad" onchange="actualizarCostoMerma()"></div>
+            <div class="input-group"><label>Motivo</label><input id="f_merma_motivo" type="text" placeholder="Motivo"></div>
+            <div class="input-group"><label>Costo estimado</label><input id="f_merma_costo" type="number" step="0.01" placeholder="0.00" readonly style="background:#f5f5f5;"></div>
+            <button class="btn btn-danger" onclick="guardarMerma()">✅ Registrar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+        actualizarCostoMerma();
+    }
+
+    function actualizarCostoMerma() {
+        const select = document.getElementById('f_merma_producto');
+        const cantidad = parseInt(document.getElementById('f_merma_cantidad').value) || 0;
+        const option = select.options[select.selectedIndex];
+        if (option && option.dataset.costo) {
+            const costoUnitario = parseFloat(option.dataset.costo);
+            document.getElementById('f_merma_costo').value = (costoUnitario * cantidad).toFixed(2);
+        }
+    }
+
+    function guardarMerma() {
+        const productoNombre = document.getElementById('f_merma_producto').value;
+        const cantidad = parseInt(document.getElementById('f_merma_cantidad').value);
+        const motivo = document.getElementById('f_merma_motivo').value.trim() || 'Sin especificar';
+        const costo = parseFloat(document.getElementById('f_merma_costo').value);
+        if (!productoNombre || !cantidad || cantidad <= 0 || isNaN(costo)) return mostrarMensaje('⚠️ Datos inválidos');
+        let productos = getProductos();
+        const producto = productos.find(p => p.nombre === productoNombre);
+        if (!producto) return mostrarMensaje('⚠️ Producto no encontrado');
+        if (producto.stock < cantidad) return mostrarMensaje('❌ Stock insuficiente. Disponible: ' + producto.stock);
+        producto.stock -= cantidad;
+        guardarProductos(productos);
+        const mermas = getMermas();
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
+        mermas.push({ producto: productoNombre, cantidad, motivo, costo, fecha, timestamp: ahora.getTime() });
+        guardarMermas(mermas);
+        cerrarModalAdmin();
+        renderizarAdmin();
+        renderizarMermas();
+        mostrarMensaje('📉 Merma registrada. Stock actual: ' + producto.stock);
+    }
+
+    function eliminarMerma(index) {
+        if (confirm('¿Eliminar esta merma? (El stock NO se recuperará)')) {
+            let mermas = getMermas();
+            mermas.splice(index, 1);
+            guardarMermas(mermas);
+            renderizarMermas();
+            mostrarMensaje('🗑️ Merma eliminada del registro');
+        }
+    }
+
+    // FIN PARTE 3
+
+        <script>
+    // ============================================================
+    // PARTE 4: VENDEDOR, TICKET, RESPALDOS, UTILIDADES, INICIO
+    // ============================================================
 
     // ---------- VENDEDOR ----------
     function renderizarVendedor() {
         const productos = getProductos();
+        const busqueda = document.getElementById('buscarVendedor').value.toLowerCase().trim();
+        const filtrados = busqueda === '' ? productos : productos.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) || 
+            (p.categoria && p.categoria.toLowerCase().includes(busqueda)) ||
+            (p.subcategoria && p.subcategoria.toLowerCase().includes(busqueda))
+        );
         const contenedor = document.getElementById('listaProductosVenta');
-        if (productos.length === 0) {
-            contenedor.innerHTML = '<p class="text-center" style="color:#999;">No hay productos disponibles</p>';
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<p class="text-center" style="color:#999;">${productos.length === 0 ? 'No hay productos disponibles' : 'No hay coincidencias'}</p>`;
             return;
         }
-        contenedor.innerHTML = productos.map((p, index) => `
-            <div class="producto-venta">
-                <div>
-                    <span class="nombre">${p.nombre}</span>
-                    <span class="stock">Stock: ${p.stock}</span>
-                    <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+        contenedor.innerHTML = filtrados.map((p, index) => {
+            const realIndex = productos.indexOf(p);
+            const bajoStock = p.stock <= UMBRAL_STOCK;
+            return `
+                <div class="producto-venta" style="${bajoStock ? 'background:#fff3cd;' : ''}">
+                    <div>
+                        <span class="nombre">${p.nombre} ${bajoStock ? '⚠️' : ''}</span>
+                        <span class="stock">Stock: ${p.stock}</span>
+                        <span class="precio">Precio: $${p.precioVenta.toFixed(2)}</span>
+                        ${p.subcategoria ? `<span style="font-size:0.7rem; color:#999;">(${p.subcategoria})</span>` : ''}
+                    </div>
+                    <button class="btn-venta" onclick="abrirModalVenta(${realIndex})">Vender</button>
                 </div>
-                <button class="btn-venta" onclick="abrirModalVenta(${index})">Vender</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         mostrarMisVentas();
     }
 
@@ -443,11 +1148,17 @@
     function abrirModalVenta(index) {
         indiceVenta = index;
         const p = getProductos()[index];
+        const clientes = getClientes();
+        let clienteOptions = '<option value="">Sin cliente</option>';
+        clientes.forEach(c => {
+            clienteOptions += `<option value="${c.nombre}|${c.telefono || ''}">${c.nombre}</option>`;
+        });
         document.getElementById('modalVendedorTitulo').textContent = `🛒 ${p.nombre}`;
         document.getElementById('modalVendedorBody').innerHTML = `
             <p><strong>Stock disponible:</strong> ${p.stock}</p>
             <p><strong>Precio de venta:</strong> $${p.precioVenta.toFixed(2)}</p>
             <div class="input-group"><label>Cantidad a vender</label><input id="f_cantidad_venta" type="number" min="1" placeholder="Cantidad"></div>
+            <div class="input-group"><label>Cliente</label><select id="f_cliente_venta">${clienteOptions}</select></div>
             <button class="btn btn-success" onclick="confirmarVenta()">✅ Vender</button>
             <button class="btn btn-outline" onclick="cerrarModalVendedor()">Cancelar</button>
         `;
@@ -463,6 +1174,9 @@
         p.stock -= cantidad;
         guardarProductos(productos);
 
+        const clienteData = document.getElementById('f_cliente_venta').value;
+        const cliente = clienteData ? { nombre: clienteData.split('|')[0], telefono: clienteData.split('|')[1] } : null;
+
         const historial = getHistorial();
         const ahora = new Date();
         const fecha = ahora.toLocaleDateString('es-CU', { day:'2-digit', month:'2-digit', year:'numeric' });
@@ -470,12 +1184,15 @@
         const venta = {
             producto: p.nombre,
             categoria: p.categoria || 'General',
+            subcategoria: p.subcategoria || '',
             cantidad: cantidad,
             precioVenta: p.precioVenta,
             precioCompra: p.precioCompra,
             gananciaUnidad: p.precioVenta - p.precioCompra,
             gananciaTotal: (p.precioVenta - p.precioCompra) * cantidad,
             vendedor: vendedorNombre,
+            cliente: cliente ? cliente.nombre : null,
+            clienteTelefono: cliente ? cliente.telefono : null,
             fecha: fecha,
             hora: hora,
             timestamp: ahora.getTime()
@@ -486,36 +1203,31 @@
         renderizarVendedor();
         mostrarMensaje(`✅ Venta de ${cantidad} ${p.nombre} registrada`);
 
-        // Preguntar si enviar por WhatsApp
-        if (confirm('📲 ¿Enviar comprobante por WhatsApp?')) {
-            enviarVentaWhatsApp(venta);
-        }
-    }
+        // Mostrar ticket
+        mostrarTicket(venta);
 
-    function enviarVentaWhatsApp(venta) {
-        const mensaje = `✅ *VENTA REGISTRADA*%0A` +
-                        `Producto: ${venta.producto}%0A` +
-                        `Cantidad: ${venta.cantidad}%0A` +
-                        `Precio unitario: $${venta.precioVenta.toFixed(2)}%0A` +
-                        `Total: $${(venta.precioVenta * venta.cantidad).toFixed(2)}%0A` +
-                        `Vendedor: ${venta.vendedor}%0A` +
-                        `Fecha: ${venta.fecha} ${venta.hora}`;
-        const url = `https://wa.me/?text=${mensaje}`;
-        window.open(url, '_blank');
+        if (confirm('📲 ¿Enviar comprobante por WhatsApp?')) {
+            // Abrir modal de ticket para que el vendedor elija el número
+            document.getElementById('modalTicket').classList.add('active');
+        }
     }
 
     function mostrarMisVentas() {
         const historial = getHistorial();
         const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
         const contenedor = document.getElementById('listaVentasVendedor');
-        if (misVentas.length === 0) { contenedor.innerHTML = '<p class="text-center" style="color:#999;">Aún no has vendido nada</p>'; return; }
+        if (misVentas.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:#999;">Aún no has vendido nada</p>';
+            return;
+        }
         contenedor.innerHTML = misVentas.slice().reverse().map(v => `
             <div class="historial-item" style="border-left-color: #1a4c8a;">
                 <div class="row"><strong>${v.producto}</strong><span>${v.fecha} ${v.hora}</span></div>
                 <div class="detalles">
                     <span>Cant: ${v.cantidad}</span>
                     <span>P.venta: $${v.precioVenta.toFixed(2)}</span>
-                    <span>Total: $${(v.precioVenta * v.cantidad).toFixed(2)}</span>
+                    <span style="color:#2e7d32;">🟢 +$${v.gananciaTotal.toFixed(2)}</span>
+                    ${v.cliente ? `<span style="color:#666;">👥 ${v.cliente}</span>` : ''}
                 </div>
             </div>
         `).join('');
@@ -534,9 +1246,94 @@
         }
     }
 
-    // ---------- ADMIN: RESPALDO Y ENVÍOS ----------
+    // ---------- TICKET ----------
+    function mostrarTicket(venta) {
+        const numeroTicket = Date.now().toString().slice(-6);
+        document.getElementById('modalTicketTitulo').textContent = `🧾 Ticket #${numeroTicket}`;
+        const total = venta.precioVenta * venta.cantidad;
+        const clienteInfo = venta.cliente ? `Cliente: ${venta.cliente} ${venta.clienteTelefono ? '📞' + venta.clienteTelefono : ''}` : 'Sin cliente';
+        document.getElementById('modalTicketBody').innerHTML = `
+            <div style="background:#f8f9fa; border-radius:12px; padding:16px; border:1px dashed #ccc; font-family:monospace;">
+                <div style="text-align:center; font-size:1.2rem; font-weight:bold;">🏪 MI INVENTARIO PRO</div>
+                <div style="text-align:center; color:#666; font-size:0.8rem;">${venta.fecha} ${venta.hora}</div>
+                <hr>
+                <div><strong>Producto:</strong> ${venta.producto}</div>
+                <div><strong>Cantidad:</strong> ${venta.cantidad}</div>
+                <div><strong>Precio unit.:</strong> $${venta.precioVenta.toFixed(2)}</div>
+                ${venta.subcategoria ? `<div><strong>Subcategoría:</strong> ${venta.subcategoria}</div>` : ''}
+                <hr>
+                <div style="font-size:1.2rem; font-weight:bold; color:#2e7d32;">TOTAL: $${total.toFixed(2)}</div>
+                <hr>
+                <div style="font-size:0.8rem; color:#666;">${clienteInfo}</div>
+                <div style="font-size:0.8rem; color:#666;">Vendedor: ${venta.vendedor}</div>
+                <div style="font-size:0.7rem; color:#999; margin-top:8px;">Ticket: #${numeroTicket}</div>
+            </div>
+            <div class="flex" style="margin-top:16px;">
+                <button class="btn btn-success" onclick="enviarTicketWhatsApp()">📲 Enviar WhatsApp</button>
+                <button class="btn btn-primary" onclick="copiarTicket()">📋 Copiar</button>
+            </div>
+            <div class="input-group" style="margin-top:12px;">
+                <label>📱 Número WhatsApp (opcional, déjalo vacío para enviar a ti mismo)</label>
+                <input type="text" id="inputNumeroWhatsApp" placeholder="Ej: 5355555555">
+            </div>
+            <button class="btn btn-outline" onclick="cerrarModalTicket()">Cerrar</button>
+        `;
+        document.getElementById('modalTicket').classList.add('active');
+        window._ultimaVenta = venta;
+    }
+
+    function enviarTicketWhatsApp() {
+        const venta = window._ultimaVenta;
+        if (!venta) return mostrarMensaje('❌ No hay ticket');
+        let numero = document.getElementById('inputNumeroWhatsApp').value.trim();
+        if (!numero) {
+            mostrarMensaje('📲 Escribe un número de teléfono o déjalo vacío para enviar a ti mismo');
+            return;
+        }
+        const total = venta.precioVenta * venta.cantidad;
+        const mensaje = `✅ *VENTA REGISTRADA*%0A` +
+                        `Ticket: ${Date.now().toString().slice(-6)}%0A` +
+                        `Producto: ${venta.producto}%0A` +
+                        `Cantidad: ${venta.cantidad}%0A` +
+                        `Precio unit.: $${venta.precioVenta.toFixed(2)}%0A` +
+                        `TOTAL: $${total.toFixed(2)}%0A` +
+                        `Vendedor: ${venta.vendedor}%0A` +
+                        `Fecha: ${venta.fecha} ${venta.hora}`;
+        const url = `https://wa.me/${numero}?text=${mensaje}`;
+        window.open(url, '_blank');
+    }
+
+    function copiarTicket() {
+        const venta = window._ultimaVenta;
+        if (!venta) return mostrarMensaje('❌ No hay ticket');
+        const total = venta.precioVenta * venta.cantidad;
+        const texto = `🧾 TICKET DE VENTA\nProducto: ${venta.producto}\nCantidad: ${venta.cantidad}\nPrecio unit.: $${venta.precioVenta.toFixed(2)}\nTOTAL: $${total.toFixed(2)}\nVendedor: ${venta.vendedor}\nFecha: ${venta.fecha} ${venta.hora}`;
+        navigator.clipboard.writeText(texto).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = texto;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+        });
+        mostrarMensaje('📋 Ticket copiado al portapapeles');
+    }
+
+    function cerrarModalTicket() {
+        document.getElementById('modalTicket').classList.remove('active');
+    }
+
+    // ---------- ADMIN: RESPALDOS ----------
     function exportarDatos() {
-        const data = JSON.stringify({ productos: getProductos(), historial: getHistorial() });
+        const data = JSON.stringify({
+            productos: getProductos(),
+            historial: getHistorial(),
+            categorias: getCategorias(),
+            clientes: getClientes(),
+            proveedores: getProveedores(),
+            gastos: getGastos(),
+            mermas: getMermas()
+        });
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -544,7 +1341,7 @@
         a.download = 'respaldo_completo.json';
         a.click();
         URL.revokeObjectURL(url);
-        mostrarMensaje('📤 Respaldo descargado');
+        mostrarMensaje('📤 Respaldo completo descargado');
     }
 
     function importarDatos() {
@@ -558,12 +1355,15 @@
             reader.onload = function(ev) {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (data.productos && Array.isArray(data.productos)) {
-                        guardarProductos(data.productos);
-                        if (data.historial && Array.isArray(data.historial)) guardarHistorial(data.historial);
-                        renderizarAdmin();
-                        mostrarMensaje('📥 Datos restaurados');
-                    } else { mostrarMensaje('⚠️ Archivo inválido'); }
+                    if (data.productos) guardarProductos(data.productos);
+                    if (data.historial) guardarHistorial(data.historial);
+                    if (data.categorias) guardarCategorias(data.categorias);
+                    if (data.clientes) guardarClientes(data.clientes);
+                    if (data.proveedores) guardarProveedores(data.proveedores);
+                    if (data.gastos) guardarGastos(data.gastos);
+                    if (data.mermas) guardarMermas(data.mermas);
+                    renderizarAdmin();
+                    mostrarMensaje('📥 Datos restaurados correctamente');
                 } catch { mostrarMensaje('⚠️ Error al leer archivo'); }
             };
             reader.readAsText(file);
@@ -572,10 +1372,17 @@
     }
 
     function enviarRespaldoCorreo() {
-        const data = JSON.stringify({ productos: getProductos(), historial: getHistorial() });
-        const encoded = encodeURIComponent(data);
-        const asunto = encodeURIComponent('Respaldo inventario');
-        const cuerpo = encodeURIComponent(`Aquí tienes el respaldo de tu inventario:\n\n${data}`);
+        const data = JSON.stringify({
+            productos: getProductos(),
+            historial: getHistorial(),
+            categorias: getCategorias(),
+            clientes: getClientes(),
+            proveedores: getProveedores(),
+            gastos: getGastos(),
+            mermas: getMermas()
+        });
+        const asunto = encodeURIComponent('Respaldo completo inventario');
+        const cuerpo = encodeURIComponent(`Aquí tienes el respaldo completo de tu inventario:\n\n${data}`);
         const link = `mailto:${CORREO_ADMIN}?subject=${asunto}&body=${cuerpo}`;
         window.open(link, '_blank');
         mostrarMensaje('📧 Abriendo correo...');
@@ -584,6 +1391,7 @@
     function enviarReporteWhatsApp() {
         const historial = getHistorial();
         const productos = getProductos();
+        const mermas = getMermas();
         let mensaje = '📊 *REPORTE DE INVENTARIO*%0A%0A';
         mensaje += '📦 *PRODUCTOS:*%0A';
         productos.forEach(p => {
@@ -595,6 +1403,26 @@
         else ultimas.forEach(v => {
             mensaje += `• ${v.producto} x${v.cantidad} | $${(v.precioVenta * v.cantidad).toFixed(2)} | ${v.vendedor} | ${v.fecha}%0A`;
         });
+        const clientes = getClientes();
+        if (clientes.length > 0) {
+            mensaje += `%0A👥 *CLIENTES:* ${clientes.length} registrados%0A`;
+        }
+        const proveedores = getProveedores();
+        if (proveedores.length > 0) {
+            mensaje += '%0A🏢 *PROVEEDORES:*%0A';
+            proveedores.forEach(p => {
+                mensaje += `• ${p.nombre}${p.telefono ? ' - 📞' + p.telefono : ''}%0A`;
+            });
+        }
+        const gastos = getGastos();
+        const totalGastos = gastos.reduce((acc, g) => acc + g.monto, 0);
+        if (gastos.length > 0) {
+            mensaje += `%0A💸 *GASTOS TOTALES:* $${totalGastos.toFixed(2)}%0A`;
+        }
+        const totalMermas = mermas.reduce((acc, m) => acc + m.costo, 0);
+        if (mermas.length > 0) {
+            mensaje += `📉 *MERMAS TOTALES:* $${totalMermas.toFixed(2)}%0A`;
+        }
         const url = `https://wa.me/?text=${mensaje}`;
         window.open(url, '_blank');
         mostrarMensaje('📲 Abriendo WhatsApp...');
@@ -623,3 +1451,4 @@
 </script>
 </body>
 </html>
+<!-- FIN PARTE 4 -->
