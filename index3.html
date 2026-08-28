@@ -65,6 +65,7 @@
         .gasto-item { background: #fff5f5; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #c62828; }
         .gasto-item .detalles { font-size: 0.8rem; color: #666; margin-top: 4px; }
         .merma-item { background: #fff8e1; border-radius: 10px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #f57f17; }
+        .search-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem; margin-bottom: 12px; }
     </style>
 </head>
 <body>
@@ -276,10 +277,9 @@
 </div>
 
 <!-- FIN PARTE 1 -->
-
-    <script>
+     <script>
     // ============================================================
-    // PARTE 2: CONFIGURACIÓN, DATOS, LOGIN, INVENTARIO, MOVIMIENTOS
+    // PARTE 2: JAVASCRIPT COMPLETO CORREGIDO
     // ============================================================
 
     console.log('✅ App iniciada correctamente');
@@ -729,11 +729,8 @@
         if (seccion === 'historial') mostrarHistorialAdmin();
     }
 
-    // FIN PARTE 2
-
-        <script>
     // ============================================================
-    // PARTE 3: CATEGORÍAS, CLIENTES, PROVEEDORES, GASTOS, MERMAS
+    // CATEGORÍAS, CLIENTES, PROVEEDORES, GASTOS, MERMAS
     // ============================================================
 
     // ---------- ADMIN: CATEGORÍAS ----------
@@ -1105,11 +1102,8 @@
         }
     }
 
-    // FIN PARTE 3
-
-        <script>
     // ============================================================
-    // PARTE 4: VENDEDOR, TICKET, RESPALDOS, UTILIDADES, INICIO
+    // VENDEDOR, TICKET, RESPALDOS, UTILIDADES
     // ============================================================
 
     // ---------- VENDEDOR ----------
@@ -1207,7 +1201,6 @@
         mostrarTicket(venta);
 
         if (confirm('📲 ¿Enviar comprobante por WhatsApp?')) {
-            // Abrir modal de ticket para que el vendedor elija el número
             document.getElementById('modalTicket').classList.add('active');
         }
     }
@@ -1443,12 +1436,13 @@
     }
 
     // ---------- INICIO ----------
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('loginAdmin').classList.add('hidden');
-    document.getElementById('loginVendedor').classList.add('hidden');
-    document.getElementById('adminSection').classList.add('hidden');
-    document.getElementById('vendedorSection').classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('loginVendedor').classList.add('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+        document.getElementById('vendedorSection').classList.add('hidden');
+    });
 </script>
 </body>
 </html>
-<!-- FIN PARTE 4 -->
