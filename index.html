@@ -607,6 +607,37 @@
         .sonido-off {
             background: #ff1744;
         }
+        /* ===== CORRECCIÓN DE COLORES EN LISTADOS ===== */
+.categoria-item,
+.cliente-item,
+.proveedor-item,
+.sucursal-item,
+.gasto-item,
+.merma-item {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+.categoria-item strong,
+.cliente-item strong,
+.proveedor-item strong,
+.sucursal-item strong,
+.gasto-item strong,
+.merma-item strong {
+    color: #ffd740 !important;
+}
+.categoria-item .detalles,
+.cliente-item .detalles,
+.proveedor-item .detalles,
+.sucursal-item .detalles,
+.gasto-item .detalles,
+.merma-item .detalles {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+.gasto-item strong + span {
+    color: #ff1744 !important; /* para el monto de gastos */
+}
+.merma-item strong + span {
+    color: #f57f17 !important; /* para el monto de mermas */
+}
     </style>
 </head>
 <body>
