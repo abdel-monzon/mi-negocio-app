@@ -54,7 +54,6 @@
         .text-center {
             text-align: center;
         }
-        /* Botones con color dinámico (se aplicará desde JS) */
         .btn {
             display: inline-block;
             padding: 12px 18px;
@@ -782,7 +781,7 @@
             </div>
         </div>
 
-        <!-- CONFIGURACIÓN (con personalización) -->
+        <!-- CONFIGURACIÓN -->
         <div id="adminConfig" class="seccion">
             <div class="card">
                 <h3>⚙️ Configuración</h3>
@@ -883,10 +882,9 @@
 </div>
 
 <!-- FIN PARTE 1 -->
-
     <script>
     // ============================================================
-    // PARTE 2: JAVASCRIPT COMPLETO (con gráficos, sucursales, personalización)
+    // PARTE 2: JAVASCRIPT COMPLETO (TODAS LAS FUNCIONES)
     // ============================================================
 
     console.log('✅ App iniciada correctamente');
@@ -977,7 +975,6 @@
         document.getElementById('vendedorSection').classList.add('hidden');
         renderizarAdmin();
         cambiarPestanaAdmin('inventario');
-        // Cargar personalización al entrar
         aplicarPersonalizacion();
         mostrarMensaje('👑 Bienvenido Administrador');
     }
@@ -1060,7 +1057,7 @@
         mostrarHistorialAdmin();
     }
 
-    // ---------- ADMIN: AGREGAR PRODUCTO (con sucursal) ----------
+    // ---------- ADMIN: AGREGAR PRODUCTO ----------
     function abrirModalAgregar() {
         const categorias = getCategorias();
         const sucursales = getSucursales();
@@ -1333,63 +1330,6 @@
         if (confirm('¿Eliminar todo el historial?')) { guardarHistorial([]); mostrarHistorialAdmin(); mostrarMensaje('🗑️ Historial limpiado'); }
     }
 
-    // ---------- ADMIN: SUCURSALES ----------
-    function renderizarSucursales() {
-        const sucursales = getSucursales();
-        const contenedor = document.getElementById('listaSucursales');
-        if (sucursales.length === 0) {
-            contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin sucursales</p>';
-            return;
-        }
-        contenedor.innerHTML = sucursales.map((s, i) => `
-            <div class="sucursal-item">
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>${s}</strong>
-                    ${i > 0 ? `<button class="btn btn-danger btn-sm" onclick="eliminarSucursal(${i})">🗑️</button>` : '<span style="color:rgba(255,255,255,0.3);">Principal</span>'}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function abrirModalSucursal() {
-        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar sucursal';
-        document.getElementById('modalAdminBody').innerHTML = `
-            <div class="input-group"><label>Nombre de la sucursal *</label><input id="f_sucursal_nombre" type="text" placeholder="Ej: Sucursal Centro"></div>
-            <button class="btn btn-success" onclick="guardarSucursal()">✅ Guardar</button>
-        `;
-        document.getElementById('modalAdmin').classList.add('active');
-    }
-
-    function guardarSucursal() {
-        const nombre = document.getElementById('f_sucursal_nombre').value.trim();
-        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
-        const sucursales = getSucursales();
-        if (sucursales.includes(nombre)) return mostrarMensaje('⚠️ Ya existe');
-        sucursales.push(nombre);
-        guardarSucursales(sucursales);
-        cerrarModalAdmin();
-        renderizarSucursales();
-        mostrarMensaje('✅ Sucursal agregada');
-    }
-
-    function eliminarSucursal(index) {
-        if (confirm('¿Eliminar esta sucursal? Los productos asignados a ella pasarán a "Principal"')) {
-            let sucursales = getSucursales();
-            const nombre = sucursales[index];
-            sucursales.splice(index, 1);
-            guardarSucursales(sucursales);
-            // Reasignar productos de esta sucursal a "Principal"
-            let productos = getProductos();
-            productos.forEach(p => {
-                if (p.sucursal === nombre) p.sucursal = 'Principal';
-            });
-            guardarProductos(productos);
-            renderizarSucursales();
-            renderizarAdmin();
-            mostrarMensaje('🗑️ Sucursal eliminada, productos reasignados a Principal');
-        }
-    }
-
     // ---------- ADMIN: CATEGORÍAS ----------
     function renderizarCategorias() {
         const categorias = getCategorias();
@@ -1454,7 +1394,7 @@
         `;
         document.getElementById('modalAdmin').classList.add('active');
     }
- 
+
     function guardarSubcategoria() {
         const catNombre = document.getElementById('f_sub_cat').value;
         const subNombre = document.getElementById('f_sub_nombre').value.trim();
@@ -1470,7 +1410,7 @@
         mostrarMensaje('✅ Subcategoría agregada');
     }
 
-// ---------- ADMIN: CLIENTES ----------
+    // ---------- ADMIN: CLIENTES ----------
     function renderizarClientes() {
         const clientes = getClientes();
         const busqueda = document.getElementById('buscarCliente').value.toLowerCase().trim();
@@ -1563,7 +1503,7 @@
         }
     }
 
-// ---------- ADMIN: PROVEEDORES ----------
+    // ---------- ADMIN: PROVEEDORES ----------
     function renderizarProveedores() {
         const proveedores = getProveedores();
         const contenedor = document.getElementById('listaProveedores');
@@ -1578,7 +1518,7 @@
                     <button class="btn btn-danger btn-sm" onclick="eliminarProveedor(${i})">🗑️</button>
                 </div>
                 <div class="detalles">${p.telefono ? '📞 ' + p.telefono : ''} ${p.email ? '✉️ ' + p.email : ''} ${p.productos ? '📦 ' + p.productos : ''}</div>
-           </div>
+            </div>
         `).join('');
     }
 
@@ -1620,7 +1560,63 @@
         }
     }
 
-// ---------- ADMIN: GASTOS ----------
+    // ---------- ADMIN: SUCURSALES ----------
+    function renderizarSucursales() {
+        const sucursales = getSucursales();
+        const contenedor = document.getElementById('listaSucursales');
+        if (sucursales.length === 0) {
+            contenedor.innerHTML = '<p class="text-center" style="color:rgba(255,255,255,0.3);">Sin sucursales</p>';
+            return;
+        }
+        contenedor.innerHTML = sucursales.map((s, i) => `
+            <div class="sucursal-item">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${s}</strong>
+                    ${i > 0 ? `<button class="btn btn-danger btn-sm" onclick="eliminarSucursal(${i})">🗑️</button>` : '<span style="color:rgba(255,255,255,0.3);">Principal</span>'}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalSucursal() {
+        document.getElementById('modalAdminTitulo').textContent = '➕ Agregar sucursal';
+        document.getElementById('modalAdminBody').innerHTML = `
+            <div class="input-group"><label>Nombre de la sucursal *</label><input id="f_sucursal_nombre" type="text" placeholder="Ej: Sucursal Centro"></div>
+            <button class="btn btn-success" onclick="guardarSucursal()">✅ Guardar</button>
+        `;
+        document.getElementById('modalAdmin').classList.add('active');
+    }
+
+    function guardarSucursal() {
+        const nombre = document.getElementById('f_sucursal_nombre').value.trim();
+        if (!nombre) return mostrarMensaje('⚠️ El nombre es obligatorio');
+        const sucursales = getSucursales();
+        if (sucursales.includes(nombre)) return mostrarMensaje('⚠️ Ya existe');
+        sucursales.push(nombre);
+        guardarSucursales(sucursales);
+        cerrarModalAdmin();
+        renderizarSucursales();
+        mostrarMensaje('✅ Sucursal agregada');
+    }
+
+    function eliminarSucursal(index) {
+        if (confirm('¿Eliminar esta sucursal? Los productos asignados a ella pasarán a "Principal"')) {
+            let sucursales = getSucursales();
+            const nombre = sucursales[index];
+            sucursales.splice(index, 1);
+            guardarSucursales(sucursales);
+            let productos = getProductos();
+            productos.forEach(p => {
+                if (p.sucursal === nombre) p.sucursal = 'Principal';
+            });
+            guardarProductos(productos);
+            renderizarSucursales();
+            renderizarAdmin();
+            mostrarMensaje('🗑️ Sucursal eliminada, productos reasignados a Principal');
+        }
+    }
+
+    // ---------- ADMIN: GASTOS ----------
     function renderizarGastos() {
         const gastos = getGastos();
         const contenedor = document.getElementById('listaGastos');
@@ -1677,7 +1673,7 @@
         }
     }
 
-// ---------- ADMIN: MERMAS ----------
+    // ---------- ADMIN: MERMAS ----------
     function renderizarMermas() {
         const mermas = getMermas();
         const contenedor = document.getElementById('listaMermas');
@@ -1697,7 +1693,7 @@
         let total = mermas.reduce((acc, m) => acc + m.costo, 0);
         document.getElementById('totalMermas').textContent = '$' + total.toFixed(2);
     }
- 
+
     function abrirModalMerma() {
         const productos = getProductos();
         let options = '<option value="">Seleccionar producto</option>';
@@ -1758,6 +1754,7 @@
             mostrarMensaje('🗑️ Merma eliminada del registro');
         }
     }
+
     // ---------- ADMIN: REPORTES (con gráficos) ----------
     function cargarReporte(periodo) {
         const historial = getHistorial();
@@ -1781,19 +1778,19 @@
         const totalMermasPeriodo = mermas.filter(m => m.timestamp >= inicio.getTime()).reduce((acc, m) => acc + m.costo, 0);
         const gananciaBruta = ventasFiltradas.reduce((acc, v) => acc + v.gananciaTotal, 0);
         const gananciaNeta = gananciaBruta - totalGastosPeriodo - totalMermasPeriodo;
- 
+
         document.getElementById('totalVentasReporte').textContent = '$' + totalVentas.toFixed(2);
         document.getElementById('gananciaNetaReporte').textContent = '$' + gananciaNeta.toFixed(2);
         document.getElementById('totalGastosReporte').textContent = '$' + totalGastosPeriodo.toFixed(2);
         document.getElementById('totalMermasReporte').textContent = '$' + totalMermasPeriodo.toFixed(2);
- 
-    // Top 5 productos
+
+        // Top 5 productos
         const contador = {};
         ventasFiltradas.forEach(v => { contador[v.producto] = (contador[v.producto] || 0) + v.cantidad; });
         const top = Object.entries(contador).sort((a,b) => b[1] - a[1]).slice(0, 5);
         document.getElementById('productoTop').textContent = top.length > 0 ? top[0][0] : '-';
 
-    // Tabla de ventas
+        // Tabla de ventas
         const contenedor = document.getElementById('tablaReporteVentas');
         if (ventasFiltradas.length === 0) {
             contenedor.innerHTML = '<p style="color:rgba(255,255,255,0.3);">No hay ventas</p>';
@@ -1806,7 +1803,7 @@
             contenedor.innerHTML = html;
         }
 
-    // Top 5 productos (tabla)
+        // Top 5 productos (tabla)
         const topContenedor = document.getElementById('topProductos');
         if (top.length === 0) {
             topContenedor.innerHTML = '<p style="color:rgba(255,255,255,0.3);">Sin datos</p>';
@@ -1817,7 +1814,7 @@
             topContenedor.innerHTML = html;
         }
 
-    // Gráfico de evolución de ventas
+        // Gráfico de evolución de ventas
         if (ventasFiltradas.length > 0) {
             const dias = {};
             ventasFiltradas.forEach(v => {
@@ -1840,7 +1837,7 @@
             if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
         }
 
-    // Gráfico de ventas por sucursal
+        // Gráfico de ventas por sucursal
         const ventasPorSucursal = {};
         ventasFiltradas.forEach(v => {
             const suc = v.sucursal || 'Principal';
@@ -1850,12 +1847,12 @@
         const dataSuc = labelsSuc.map(s => ventasPorSucursal[s]);
         if (labelsSuc.length > 0) {
             dibujarGrafico('graficoSucursales', labelsSuc, dataSuc, 'Ventas por sucursal', 'bar');
-       } else {
+        } else {
             if (chartSucursalInstance) { chartSucursalInstance.destroy(); chartSucursalInstance = null; }
-       }
+        }
     }
 
-// ---------- GRÁFICOS ----------
+    // ---------- GRÁFICOS ----------
     function dibujarGrafico(canvasId, etiquetas, datos, titulo, tipo = 'bar') {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
@@ -1880,7 +1877,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                    plugins: {
+                plugins: {
                     legend: {
                         labels: { color: 'rgba(255,255,255,0.7)', font: { size: 12 } }
                     },
@@ -1890,7 +1887,7 @@
                                 let label = context.dataset.label || '';
                                 if (label) label += ': ';
                                 if (context.parsed.y !== null) {
-                                        label += '$' + context.parsed.y.toFixed(2);
+                                    label += '$' + context.parsed.y.toFixed(2);
                                 }
                                 return label;
                             }
@@ -1912,7 +1909,6 @@
         if (canvasId === 'graficoVentas') chartInstance = nuevo;
         else chartSucursalInstance = nuevo;
     }
-            
 
     // ---------- ADMIN: PERSONALIZACIÓN ----------
     function cargarPersonalizacion() {
@@ -1925,12 +1921,10 @@
 
     function aplicarPersonalizacion() {
         const p = getPersonalizacion();
-        // Nombre del negocio
         const nombre = p.nombre || 'Mi Inventario Pro';
         document.getElementById('loginTitulo').textContent = '🔐 ' + nombre;
         document.getElementById('adminTitulo').textContent = '🎉 ' + nombre + ' - Admin';
         document.querySelectorAll('.nombre-negocio').forEach(el => el.textContent = nombre);
-        // Color principal (afecta a los botones .btn-primary, .btn-venta, etc.)
         if (p.colorPrincipal) {
             const color = p.colorPrincipal;
             document.querySelectorAll('.btn-primary, .btn-venta').forEach(el => {
@@ -1940,7 +1934,6 @@
                 el.style.background = `linear-gradient(135deg, ${color}, ${ajustarBrillo(color, -20)})`;
             });
         }
-        // Logo
         if (p.logoUrl) {
             document.querySelectorAll('.logo-img').forEach(el => {
                 el.src = p.logoUrl;
@@ -2135,25 +2128,6 @@
         }
     }
 
-    
-
-    function cambiarPestanaVendedor(seccion) {
-        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
-        if (seccion === 'vender') {
-            document.getElementById('vendedorVender').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
-        } else {
-            document.getElementById('vendedorMisVentas').classList.add('active');
-            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
-            mostrarMisVentas();
-        }
-    }
-
-    // ---------- TICKET -----modalTicket').classList.add('active');
-        }
-    }
-
     function mostrarMisVentas() {
         const historial = getHistorial();
         const misVentas = historial.filter(v => v.vendedor === vendedorNombre);
@@ -2177,7 +2151,22 @@
     }
 
     function cambiarPestanaVendedor(seccion) {
-        doc.getElementById('modalTicketTitulo').textContent = `🧾 Ticket #${numeroTicket}`;
+        document.querySelectorAll('#vendedorSection .seccion').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('#vendedorSection .tab-btn').forEach(el => el.classList.remove('active'));
+        if (seccion === 'vender') {
+            document.getElementById('vendedorVender').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:first-child').classList.add('active');
+        } else {
+            document.getElementById('vendedorMisVentas').classList.add('active');
+            document.querySelector('#vendedorSection .tab-btn:last-child').classList.add('active');
+            mostrarMisVentas();
+        }
+    }
+
+    // ---------- TICKET ----------
+    function mostrarTicket(venta) {
+        const numeroTicket = Date.now().toString().slice(-6);
+        document.getElementById('modalTicketTitulo').textContent = `🧾 Ticket #${numeroTicket}`;
         const total = venta.precioVenta * venta.cantidad;
         const clienteInfo = venta.cliente ? `Cliente: ${venta.cliente} ${venta.clienteTelefono ? '📞' + venta.clienteTelefono : ''}` : 'Sin cliente';
         document.getElementById('modalTicketBody').innerHTML = `
@@ -2252,7 +2241,7 @@
         document.getElementById('modalTicket').classList.remove('active');
     }
 
-    // ---------- ADMIN: RESPALDOS (actualizado para incluir personalización y sucursales) ----------
+    // ---------- ADMIN: RESPALDOS ----------
     function exportarDatos() {
         const data = JSON.stringify({
             productos: getProductos(),
@@ -2388,7 +2377,6 @@
         document.getElementById('loginVendedor').classList.add('hidden');
         document.getElementById('adminSection').classList.add('hidden');
         document.getElementById('vendedorSection').classList.add('hidden');
-        // Cargar personalización al inicio (para el login)
         cargarPersonalizacion();
     });
 </script>
